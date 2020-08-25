@@ -6,32 +6,31 @@ import com.unn.maestro.models.PredictorDescriptor;
 import java.util.ArrayList;
 
 public class Maestro {
-    final PredictorDescriptor PREDICTOR = new PredictorDescriptor()
-        .withFeature("A")
-        .withValue("B");
     ArrayList<Agent> agents;
+    PredictorDescriptor predictor;
 
     public Maestro() { }
 
+    public void init() {
+        this.agents = new ArrayList<>();
+    }
+
     public void run() {
         while (true) {
-            this.updateAgentList();
+
 
         }
     }
 
-    private void updateAgentList() {
-        if (this.agents != null) {
+    public void bindPredictor(PredictorDescriptor _predictor) {
+        // TODO: trigger reset in subordinate agents
+        this.predictor = _predictor;
+    }
+
+    public void bindAgent(Agent _agent) {
+        if (!this.agents.contains(_agent)) {
             return;
         }
-        this.agents = new ArrayList<>();
-        int agentCount = 10;
-        for (int i = 0; i < agentCount; ++i) {
-            this.agents.add(new Agent()
-                .withHost("http")
-                .withHost("localhost")
-                .withPort(9002)
-                .withId(1+i));
-        }
+        this.agents.add(_agent);
     }
 }

@@ -39,6 +39,18 @@ public class DataController {
                 .withPort(Config.DATACENTER_PORT);
             return new Gson().toJson(new StandardResponse(StatusResponse.SUCCESS, null, locator));
         });
+
+        post("/agent/register", (request, response) -> {
+            Agent agent = new Gson().fromJson(request.body(), Agent.class);
+            maestro.bindAgent(agent);
+            return SUCCESS;
+        });
+
+        post("/maestro/predictor", (request, response) -> {
+            PredictorDescriptor predictor = new Gson().fromJson(request.body(), PredictorDescriptor.class);
+            maestro.bindPredictor(predictor);
+            return SUCCESS;
+        });
     }
 
 }
