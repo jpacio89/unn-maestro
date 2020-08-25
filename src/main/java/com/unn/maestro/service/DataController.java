@@ -1,6 +1,7 @@
 package com.unn.maestro.service;
 
 import com.google.gson.Gson;
+import com.unn.maestro.Config;
 import com.unn.maestro.models.*;
 
 import static spark.Spark.get;
@@ -30,7 +31,14 @@ public class DataController {
     }
 
     private static void initRoutes() {
-
+        // NOTE: subordinated agents report to a Maestro instance and get Datacenter location from it
+        get("/datacenter/locator", (request, response) -> {
+            DatacenterLocator locator = new DatacenterLocator()
+                .withProtocol(Config.DATACENTER_PROTOCOL)
+                .withHost(Config.DATACENTER_HOST)
+                .withPort(Config.DATACENTER_PORT);
+            return new Gson().toJson(new StandardResponse(StatusResponse.SUCCESS, null, locator));
+        });
     }
 
 }
