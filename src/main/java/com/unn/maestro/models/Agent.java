@@ -1,6 +1,7 @@
 package com.unn.maestro.models;
 
 public class Agent {
+    String type;
     String protocol;
     String host;
     int port;
@@ -8,6 +9,15 @@ public class Agent {
 
     public Agent() {
 
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public Agent withType(String type) {
+        this.type = type;
+        return this;
     }
 
     public String getProtocol() {

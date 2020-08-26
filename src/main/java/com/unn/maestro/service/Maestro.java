@@ -8,11 +8,14 @@ import java.util.ArrayList;
 public class Maestro {
     ArrayList<Agent> agents;
     PredictorDescriptor predictor;
+    MinerMediator minerMediator;
 
     public Maestro() { }
 
     public void init() {
         this.agents = new ArrayList<>();
+        this.minerMediator = new MinerMediator();
+        this.minerMediator.init(this.agents);
     }
 
     public void run() {

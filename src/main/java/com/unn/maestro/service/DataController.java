@@ -9,25 +9,23 @@ import static spark.Spark.post;
 
 public class DataController {
     static final String SUCCESS = new Gson().toJson(new StandardResponse(StatusResponse.SUCCESS));
-    static DataService service;
     static Maestro maestro;
 
     public DataController() { }
 
     public static void serve() {
-        initService();
-        initRoutes();
         initMaestro();
-    }
-
-    private static void initService() {
-        service = new DataService();
-        service.init();
+        initRoutes();
     }
 
     private static void initMaestro() {
         maestro = new Maestro();
-        maestro.run();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                maestro.run();
+            }
+        }).start();
     }
 
     private static void initRoutes() {

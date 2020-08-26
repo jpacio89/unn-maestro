@@ -1,0 +1,82 @@
+package com.unn.maestro.service;
+
+import com.unn.maestro.models.Agent;
+import com.unn.maestro.models.AgentRole;
+import retrofit2.GsonConverterFactory;
+import retrofit2.Retrofit;
+
+import java.util.ArrayList;
+
+public class MinerMediator {
+    final int HIDDEN_LAYER_COUNT = 10;
+    final String TYPE = "miner";
+    ArrayList<AgentRole> roles;
+
+    public MinerMediator() {
+        for(;;) {
+            work();
+        }
+    }
+
+    public void init(ArrayList<Agent> _agents) {
+        this.assignRoles(_agents);
+    }
+
+    public void work() {
+        for (AgentRole role : this.roles) {
+            if (!role.isInSync()) {
+                // TODO: run in parallel
+                this.syncRole(role);
+            }
+        }
+    }
+
+    private void syncRole(AgentRole role) {
+        // TODO: Retrofit cache?
+        Agent agent = role.getAgent();
+        Retrofit retrofit = new Retrofit.Builder()
+            .baseUrl(String.format("%s://%s:%s",
+                    agent.getProtocol(),
+                    agent.getHost(),
+                    agent.getPort()))
+            .addConverterFactory(GsonConverterFactory.create())
+            .build();
+        MinerService service = retrofit.create(MinerService.class);
+        service.setRole(role);
+    }
+
+    void assignRoles(ArrayList<Agent> _agents) {
+        this.roles = new ArrayList<>();
+        int count = 0;
+        for (Agent agent : _agents) {
+            if (!this.ofType(agent)) {
+                continue;
+            }
+            this.roles.add(new AgentRole()
+                .withAgent(agent)
+                .withLayer(0)
+            );
+            count++;
+        }
+        int i = 0;
+        for (AgentRole agent : this.roles) {
+            int layer = this.getLayer(i, count);
+            this.roles.get(i)
+                .withLayer(layer);
+            i++;
+        }
+    }
+
+    int getLayer(int index, int count) {
+        int half = count / 2;
+        if (index < half || HIDDEN_LAYER_COUNT <= 0) {
+            return 0;
+        }
+        int step = half / HIDDEN_LAYER_COUNT;
+        return 1 + ((index - half) / step);
+    }
+
+    boolean ofType(Agent agent) {
+        return TYPE.equals(agent.getType());
+    }
+}
