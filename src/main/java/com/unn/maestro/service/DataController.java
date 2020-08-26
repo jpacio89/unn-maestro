@@ -3,6 +3,7 @@ package com.unn.maestro.service;
 import com.google.gson.Gson;
 import com.unn.maestro.Config;
 import com.unn.maestro.models.*;
+import com.unn.maestro.models.MinerNotification;
 
 import static spark.Spark.get;
 import static spark.Spark.post;
@@ -47,6 +48,12 @@ public class DataController {
         post("/maestro/predictor", (request, response) -> {
             PredictorDescriptor predictor = new Gson().fromJson(request.body(), PredictorDescriptor.class);
             maestro.bindPredictor(predictor);
+            return SUCCESS;
+        });
+
+        post("/maestro/miner/notify", (request, response) -> {
+            MinerNotification notification = new Gson().fromJson(request.body(), MinerNotification.class);
+            maestro.setNotification(notification);
             return SUCCESS;
         });
     }

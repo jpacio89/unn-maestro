@@ -1,11 +1,13 @@
 package com.unn.maestro.service;
 
 import com.unn.maestro.models.Agent;
+import com.unn.maestro.models.MinerNotification;
 import com.unn.maestro.models.PredictorDescriptor;
 
 import java.util.ArrayList;
 
 public class Maestro {
+    final int SLEEP = 5000;
     ArrayList<Agent> agents;
     PredictorDescriptor predictor;
     MinerMediator minerMediator;
@@ -20,8 +22,12 @@ public class Maestro {
 
     public void run() {
         while (true) {
-
-
+            try {
+                this.minerMediator.work();
+                Thread.sleep(SLEEP);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -35,5 +41,9 @@ public class Maestro {
             return;
         }
         this.agents.add(_agent);
+    }
+
+    public void setNotification(MinerNotification notification) {
+        this.minerMediator.setNotification(notification);
     }
 }

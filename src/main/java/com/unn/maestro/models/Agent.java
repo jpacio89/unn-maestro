@@ -1,5 +1,7 @@
 package com.unn.maestro.models;
 
+import java.util.Objects;
+
 public class Agent {
     String type;
     String protocol;
@@ -54,5 +56,22 @@ public class Agent {
     public Agent withId(int id) {
         this.id = id;
         return this;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Agent agent = (Agent) o;
+        return port == agent.port &&
+                id == agent.id &&
+                type.equals(agent.type) &&
+                protocol.equals(agent.protocol) &&
+                host.equals(agent.host);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(type, protocol, host, port, id);
     }
 }

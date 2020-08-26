@@ -2,23 +2,23 @@ package com.unn.maestro.service;
 
 import com.unn.maestro.models.Agent;
 import com.unn.maestro.models.AgentRole;
+import com.unn.maestro.models.MinerNotification;
 import retrofit2.GsonConverterFactory;
 import retrofit2.Retrofit;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class MinerMediator {
     final int HIDDEN_LAYER_COUNT = 10;
     final String TYPE = "miner";
     ArrayList<AgentRole> roles;
+    HashMap<Agent, MinerNotification> notifications;
 
-    public MinerMediator() {
-        for(;;) {
-            work();
-        }
-    }
+    public MinerMediator() { }
 
     public void init(ArrayList<Agent> _agents) {
+        this.notifications = new HashMap<>();
         this.assignRoles(_agents);
     }
 
@@ -35,7 +35,7 @@ public class MinerMediator {
         // TODO: Retrofit cache?
         Agent agent = role.getAgent();
         Retrofit retrofit = new Retrofit.Builder()
-            .baseUrl(String.format("%s://%s:%s",
+            .baseUrl(String.format("%s://%s:%d",
                     agent.getProtocol(),
                     agent.getHost(),
                     agent.getPort()))
@@ -78,5 +78,9 @@ public class MinerMediator {
 
     boolean ofType(Agent agent) {
         return TYPE.equals(agent.getType());
+    }
+
+    public void setNotification(MinerNotification notification) {
+        this.notifications.put(notification.getAgent(), notification);
     }
 }
