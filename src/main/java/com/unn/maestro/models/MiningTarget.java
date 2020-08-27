@@ -1,6 +1,6 @@
 package com.unn.maestro.models;
 
-public class PredictorDescriptor {
+public class MiningTarget {
     String feature;
     String value;
 
@@ -8,7 +8,7 @@ public class PredictorDescriptor {
         return feature;
     }
 
-    public PredictorDescriptor withFeature(String feature) {
+    public MiningTarget withFeature(String feature) {
         this.feature = feature;
         return this;
     }
@@ -17,7 +17,7 @@ public class PredictorDescriptor {
         return value;
     }
 
-    public PredictorDescriptor withValue(String value) {
+    public MiningTarget withValue(String value) {
         this.value = value;
         return this;
     }

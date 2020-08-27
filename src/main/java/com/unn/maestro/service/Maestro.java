@@ -2,14 +2,14 @@ package com.unn.maestro.service;
 
 import com.unn.maestro.models.Agent;
 import com.unn.maestro.models.MinerNotification;
-import com.unn.maestro.models.PredictorDescriptor;
+import com.unn.maestro.models.MiningTarget;
 
 import java.util.ArrayList;
 
 public class Maestro {
     final int SLEEP = 5000;
     ArrayList<Agent> agents;
-    PredictorDescriptor predictor;
+    MiningTarget predictor;
     MinerMediator minerMediator;
 
     public Maestro() { }
@@ -31,7 +31,7 @@ public class Maestro {
         }
     }
 
-    public void bindPredictor(PredictorDescriptor _predictor) {
+    public void bindPredictor(MiningTarget _predictor) {
         // TODO: trigger reset in subordinate agents
         this.predictor = _predictor;
     }

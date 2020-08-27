@@ -1,14 +1,27 @@
 package com.unn.maestro.models;
 
 public class AgentRole {
+    MiningTarget target;
     Agent agent;
     int layer;
     boolean isInSync;
 
-    public AgentRole(Agent _agent, int _layer, boolean _isInSync) {
+    public AgentRole() { }
+
+    public AgentRole(Agent _agent, int _layer, boolean _isInSync, MiningTarget _target) {
         this.agent = _agent;
         this.layer = _layer;
         this.isInSync = _isInSync;
+        this.target = _target;
+    }
+
+    public MiningTarget getTarget() {
+        return target;
+    }
+
+    public AgentRole withTarget(MiningTarget _target) {
+        this.target = _target;
+        return this;
     }
 
     public Agent getAgent() {

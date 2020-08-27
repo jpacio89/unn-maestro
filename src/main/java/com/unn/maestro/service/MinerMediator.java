@@ -28,6 +28,7 @@ public class MinerMediator {
                 // TODO: run in parallel
                 this.syncRole(role);
             }
+            // TODO: reset low performing miners
         }
     }
 
