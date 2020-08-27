@@ -45,9 +45,9 @@ public class DataController {
             return SUCCESS;
         });
 
-        post("/maestro/predictor", (request, response) -> {
-            MiningTarget predictor = new Gson().fromJson(request.body(), MiningTarget.class);
-            maestro.bindPredictor(predictor);
+        post("/maestro/target", (request, response) -> {
+            MiningTarget target = new Gson().fromJson(request.body(), MiningTarget.class);
+            maestro.bindTarget(target);
             return SUCCESS;
         });
 

@@ -9,7 +9,7 @@ import java.util.ArrayList;
 public class Maestro {
     final int SLEEP = 5000;
     ArrayList<Agent> agents;
-    MiningTarget predictor;
+    MiningTarget target;
     MinerMediator minerMediator;
 
     public Maestro() { }
@@ -31,9 +31,9 @@ public class Maestro {
         }
     }
 
-    public void bindPredictor(MiningTarget _predictor) {
+    public void bindTarget(MiningTarget _target) {
         // TODO: trigger reset in subordinate agents
-        this.predictor = _predictor;
+        this.target = _target;
     }
 
     public void bindAgent(Agent _agent) {
