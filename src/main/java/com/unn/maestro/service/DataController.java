@@ -31,18 +31,12 @@ public class DataController {
 
     private static void initRoutes() {
         // NOTE: subordinated agents report to a Maestro instance and get Datacenter location from it
-        get("/datacenter/locator", (request, response) -> {
-            DatacenterLocator locator = new DatacenterLocator()
+        get("/datacenter/origin", (request, response) -> {
+            DatacenterOrigin locator = new DatacenterOrigin()
                 .withProtocol(Config.DATACENTER_PROTOCOL)
                 .withHost(Config.DATACENTER_HOST)
                 .withPort(Config.DATACENTER_PORT);
             return new Gson().toJson(new StandardResponse(StatusResponse.SUCCESS, null, locator));
-        });
-
-        post("/agent/register", (request, response) -> {
-            Agent agent = new Gson().fromJson(request.body(), Agent.class);
-            maestro.bindAgent(agent);
-            return SUCCESS;
         });
 
         post("/maestro/target", (request, response) -> {
@@ -51,7 +45,13 @@ public class DataController {
             return SUCCESS;
         });
 
-        post("/maestro/miner/notify", (request, response) -> {
+        post("/agent/register", (request, response) -> {
+            Agent agent = new Gson().fromJson(request.body(), Agent.class);
+            maestro.bindAgent(agent);
+            return SUCCESS;
+        });
+
+        post("/agent/miner/action/publish/statistics", (request, response) -> {
             MinerNotification notification = new Gson().fromJson(request.body(), MinerNotification.class);
             maestro.setNotification(notification);
             return SUCCESS;

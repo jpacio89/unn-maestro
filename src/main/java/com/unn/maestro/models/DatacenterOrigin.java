@@ -1,11 +1,11 @@
 package com.unn.maestro.models;
 
-public class DatacenterLocator {
+public class DatacenterOrigin {
     String protocol;
     String host;
     int port;
 
-    public DatacenterLocator() {
+    public DatacenterOrigin() {
 
     }
 
@@ -13,7 +13,7 @@ public class DatacenterLocator {
         return protocol;
     }
 
-    public DatacenterLocator withProtocol(String protocol) {
+    public DatacenterOrigin withProtocol(String protocol) {
         this.protocol = protocol;
         return this;
     }
@@ -22,7 +22,7 @@ public class DatacenterLocator {
         return host;
     }
 
-    public DatacenterLocator withHost(String host) {
+    public DatacenterOrigin withHost(String host) {
         this.host = host;
         return this;
     }
@@ -31,7 +31,7 @@ public class DatacenterLocator {
         return port;
     }
 
-    public DatacenterLocator withPort(int port) {
+    public DatacenterOrigin withPort(int port) {
         this.port = port;
         return this;
     }
