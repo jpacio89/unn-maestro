@@ -5,7 +5,9 @@ import com.unn.maestro.models.AgentRole;
 import com.unn.maestro.models.MinerNotification;
 import retrofit2.GsonConverterFactory;
 import retrofit2.Retrofit;
+import retrofit2.converter.jackson.JacksonConverterFactory;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -40,10 +42,16 @@ public class MinerMediator {
                     agent.getProtocol(),
                     agent.getHost(),
                     agent.getPort()))
+            .addConverterFactory(JacksonConverterFactory.create())
             .addConverterFactory(GsonConverterFactory.create())
             .build();
         MinerService service = retrofit.create(MinerService.class);
-        service.setRole(role);
+        try {
+            service.setRole(role).execute();
+            role.withSync(true);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     void assignRoles(ArrayList<Agent> _agents) {
@@ -74,6 +82,9 @@ public class MinerMediator {
             return 0;
         }
         int step = half / HIDDEN_LAYER_COUNT;
+        if (step == 0) {
+            return 0;
+        }
         return 1 + ((index - half) / step);
     }
 

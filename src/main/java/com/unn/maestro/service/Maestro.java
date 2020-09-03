@@ -11,18 +11,22 @@ public class Maestro {
     ArrayList<Agent> agents;
     MiningTarget target;
     MinerMediator minerMediator;
+    long initTime = -1;
 
     public Maestro() { }
 
     public void init() {
+        initTime = System.currentTimeMillis();
         this.agents = new ArrayList<>();
         this.minerMediator = new MinerMediator();
-        this.minerMediator.init(this.agents);
     }
 
     public void run() {
         while (true) {
             try {
+                if (System.currentTimeMillis() - initTime > SLEEP) {
+                    this.minerMediator.init(this.agents);
+                }
                 if (this.target != null) {
                     this.minerMediator.work();
                 }
@@ -39,7 +43,7 @@ public class Maestro {
     }
 
     public void bindAgent(Agent _agent) {
-        if (!this.agents.contains(_agent)) {
+        if (this.agents.contains(_agent)) {
             return;
         }
         this.agents.add(_agent);

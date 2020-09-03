@@ -59,7 +59,7 @@ public class DataController {
                 .withProtocol(Config.DATACENTER_PROTOCOL)
                 .withHost(Config.DATACENTER_HOST)
                 .withPort(Config.DATACENTER_PORT);
-            return new Gson().toJson(new StandardResponse(StatusResponse.SUCCESS, null, locator));
+            return new Gson().toJson(locator);
         });
 
         post("/maestro/target", (request, response) -> {
