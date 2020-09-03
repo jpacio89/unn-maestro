@@ -23,7 +23,9 @@ public class Maestro {
     public void run() {
         while (true) {
             try {
-                this.minerMediator.work();
+                if (this.target != null) {
+                    this.minerMediator.work();
+                }
                 Thread.sleep(SLEEP);
             } catch (InterruptedException e) {
                 e.printStackTrace();

@@ -21,4 +21,12 @@ public class MiningTarget {
         this.value = value;
         return this;
     }
+
+    public void setFeature(String feature) {
+        this.feature = feature;
+    }
+
+    public void setValue(String value) {
+        this.value = value;
+    }
 }
