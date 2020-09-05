@@ -1,12 +1,10 @@
 package com.unn.maestro.service;
 
-import com.unn.maestro.models.AgentRole;
-import com.unn.maestro.models.StandardResponse;
+import com.unn.common.operations.AgentRole;
+import com.unn.common.server.StandardResponse;
 import retrofit2.Call;
 import retrofit2.http.Body;
-import retrofit2.http.GET;
 import retrofit2.http.POST;
-import retrofit2.http.Path;
 
 public interface MinerService {
     @POST("/miner/role")

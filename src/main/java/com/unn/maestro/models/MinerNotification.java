@@ -1,5 +1,7 @@
 package com.unn.maestro.models;
 
+import com.unn.common.operations.Agent;
+
 public class MinerNotification {
     Agent agent;
     double accuracy;

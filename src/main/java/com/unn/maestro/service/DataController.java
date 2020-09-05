@@ -1,6 +1,11 @@
 package com.unn.maestro.service;
 
 import com.google.gson.Gson;
+import com.unn.common.globals.NetworkConfig;
+import com.unn.common.operations.Agent;
+import com.unn.common.operations.MiningTarget;
+import com.unn.common.server.StandardResponse;
+import com.unn.common.server.StatusResponse;
 import com.unn.maestro.Config;
 import com.unn.maestro.models.*;
 import com.unn.maestro.models.MinerNotification;
@@ -61,9 +66,9 @@ public class DataController {
         // NOTE: subordinated agents report to a Maestro instance and get Datacenter location from it
         get("/datacenter/origin", (request, response) -> {
             DatacenterOrigin locator = new DatacenterOrigin()
-                .withProtocol(Config.DATACENTER_PROTOCOL)
-                .withHost(Config.DATACENTER_HOST)
-                .withPort(Config.DATACENTER_PORT);
+                .withProtocol(NetworkConfig.DATACENTER_PROTOCOL)
+                .withHost(NetworkConfig.DATACENTER_HOST)
+                .withPort(NetworkConfig.DATACENTER_PORT);
             return new Gson().toJson(locator);
         });
 

@@ -1,9 +1,9 @@
 package com.unn.maestro.service;
 
-import com.unn.maestro.models.Agent;
-import com.unn.maestro.models.AgentRole;
+import com.unn.common.operations.Agent;
+import com.unn.common.operations.AgentRole;
+import com.unn.common.operations.MiningTarget;
 import com.unn.maestro.models.MinerNotification;
-import com.unn.maestro.models.MiningTarget;
 import retrofit2.GsonConverterFactory;
 import retrofit2.Retrofit;
 import retrofit2.converter.jackson.JacksonConverterFactory;
