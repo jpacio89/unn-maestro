@@ -3,12 +3,12 @@ package com.unn.maestro.service;
 import com.google.gson.Gson;
 import com.unn.common.globals.NetworkConfig;
 import com.unn.common.operations.Agent;
+import com.unn.common.operations.DatacenterOrigin;
 import com.unn.common.operations.MiningTarget;
 import com.unn.common.server.StandardResponse;
 import com.unn.common.server.StatusResponse;
 import com.unn.maestro.Config;
-import com.unn.maestro.models.*;
-import com.unn.maestro.models.MinerNotification;
+import com.unn.common.mining.MinerNotification;
 
 import static spark.Spark.*;
 
@@ -55,7 +55,7 @@ public class DataController {
     }
 
     private static void initRoutes() {
-        port(Config.MAESTRO_PORT);
+        port(NetworkConfig.MAESTRO_PORT);
         enableCORS("*", "POST, GET, OPTIONS", null);
 
         post("/brain/reset", (request, response) -> {

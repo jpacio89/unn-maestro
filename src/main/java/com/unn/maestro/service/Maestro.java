@@ -2,7 +2,7 @@ package com.unn.maestro.service;
 
 import com.unn.common.operations.Agent;
 import com.unn.common.operations.MiningTarget;
-import com.unn.maestro.models.MinerNotification;
+import com.unn.common.mining.MinerNotification;
 
 import java.util.ArrayList;
 import java.util.Collections;
