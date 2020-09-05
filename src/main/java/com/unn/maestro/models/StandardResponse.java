@@ -6,6 +6,8 @@ public class StandardResponse {
     // private JsonElement data;
     private Object data;
 
+    public StandardResponse() { }
+
     public StandardResponse(StatusResponse _status) {
         this.status = _status;
     }
@@ -14,5 +16,29 @@ public class StandardResponse {
         this.status = _status;
         this.message = _message;
         this.data = _data;
+    }
+
+    public StatusResponse getStatus() {
+        return status;
+    }
+
+    public void setStatus(StatusResponse status) {
+        this.status = status;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
+    public Object getData() {
+        return data;
+    }
+
+    public void setData(Object data) {
+        this.data = data;
     }
 }

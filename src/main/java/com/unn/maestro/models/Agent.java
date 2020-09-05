@@ -1,8 +1,10 @@
 package com.unn.maestro.models;
 
 import java.util.Objects;
+import java.util.UUID;
 
 public class Agent {
+    String uuid;
     String type;
     String protocol;
     String host;
@@ -10,7 +12,7 @@ public class Agent {
     int id;
 
     public Agent() {
-
+        this.uuid = UUID.randomUUID().toString();
     }
 
     public String getType() {
@@ -63,15 +65,39 @@ public class Agent {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Agent agent = (Agent) o;
-        return port == agent.port &&
-                id == agent.id &&
-                type.equals(agent.type) &&
-                protocol.equals(agent.protocol) &&
-                host.equals(agent.host);
+        return uuid.equals(agent.uuid);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(type, protocol, host, port, id);
+        return Objects.hash(uuid);
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public void setProtocol(String protocol) {
+        this.protocol = protocol;
+    }
+
+    public void setHost(String host) {
+        this.host = host;
+    }
+
+    public void setPort(int port) {
+        this.port = port;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public String getUuid() {
+        return uuid;
+    }
+
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
     }
 }

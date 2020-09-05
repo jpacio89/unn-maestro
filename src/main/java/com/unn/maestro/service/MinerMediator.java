@@ -3,6 +3,7 @@ package com.unn.maestro.service;
 import com.unn.maestro.models.Agent;
 import com.unn.maestro.models.AgentRole;
 import com.unn.maestro.models.MinerNotification;
+import com.unn.maestro.models.MiningTarget;
 import retrofit2.GsonConverterFactory;
 import retrofit2.Retrofit;
 import retrofit2.converter.jackson.JacksonConverterFactory;
@@ -12,22 +13,35 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class MinerMediator {
-    final int HIDDEN_LAYER_COUNT = 10;
+    final int LAYER_COUNT = 5;
+    final int[] LAYER_RATIOS = { 50, 25, 10, 10, 5 };
     final String TYPE = "miner";
     ArrayList<AgentRole> roles;
     HashMap<Agent, MinerNotification> notifications;
 
     public MinerMediator() { }
 
-    public void init(ArrayList<Agent> _agents) {
+    public void init() {
+        this.roles = new ArrayList<>();
         this.notifications = new HashMap<>();
-        this.assignRoles(_agents);
     }
 
-    public void work() {
+    public void addAgent(Agent agent) {
+        int layer = this.getLayer();
+        this.roles.add(new AgentRole()
+                .withAgent(agent)
+                .withLayer(layer)
+        );
+    }
+
+    public void work(MiningTarget target) {
+        if (this.roles == null) {
+            return;
+        }
         for (AgentRole role : this.roles) {
             if (!role.isInSync()) {
                 // TODO: run in parallel
+                role.withTarget(target);
                 this.syncRole(role);
             }
             // TODO: reset low performing miners
@@ -54,7 +68,7 @@ public class MinerMediator {
         }
     }
 
-    void assignRoles(ArrayList<Agent> _agents) {
+    /*void assignRoles(ArrayList<Agent> _agents) {
         this.roles = new ArrayList<>();
         int count = 0;
         for (Agent agent : _agents) {
@@ -74,18 +88,27 @@ public class MinerMediator {
                 .withLayer(layer);
             i++;
         }
+    }*/
+
+    int getLayer() {
+        long roleCount = this.roles.size();
+        if (roleCount == 0) {
+            return 0;
+        }
+        for (int layer = 0; layer < LAYER_COUNT; ++layer) {
+            long count = this.countByLayer(layer);
+            long ratio = count * 100 / roleCount;
+            if (ratio < LAYER_RATIOS[layer]) {
+                return layer;
+            }
+        }
+        return 0;
     }
 
-    int getLayer(int index, int count) {
-        int half = count / 2;
-        if (index < half || HIDDEN_LAYER_COUNT <= 0) {
-            return 0;
-        }
-        int step = half / HIDDEN_LAYER_COUNT;
-        if (step == 0) {
-            return 0;
-        }
-        return 1 + ((index - half) / step);
+    private long countByLayer(int _layer) {
+        return this.roles.stream().filter((AgentRole role) -> {
+            return role.getLayer() == _layer;
+        }).count();
     }
 
     boolean ofType(Agent agent) {

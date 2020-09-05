@@ -5,30 +5,34 @@ import com.unn.maestro.models.MinerNotification;
 import com.unn.maestro.models.MiningTarget;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public class Maestro {
-    final int SLEEP = 5000;
+    final int SLEEP = 1000;
     ArrayList<Agent> agents;
+    List<Agent> pendingAgents;
     MiningTarget target;
     MinerMediator minerMediator;
-    long initTime = -1;
 
     public Maestro() { }
 
     public void init() {
-        initTime = System.currentTimeMillis();
         this.agents = new ArrayList<>();
+        this.pendingAgents = new ArrayList<>();
         this.minerMediator = new MinerMediator();
+        this.minerMediator.init();
+        this.pendingAgents = Collections.synchronizedList(new ArrayList<Agent>());
     }
 
+    public void reset() { }
+
     public void run() {
-        while (true) {
+        for (;;) {
             try {
-                if (System.currentTimeMillis() - initTime > SLEEP) {
-                    this.minerMediator.init(this.agents);
-                }
+                this.handlePendingAgents();
                 if (this.target != null) {
-                    this.minerMediator.work();
+                    this.minerMediator.work(this.target);
                 }
                 Thread.sleep(SLEEP);
             } catch (InterruptedException e) {
@@ -42,11 +46,23 @@ public class Maestro {
         this.target = _target;
     }
 
+    public void handlePendingAgents() {
+        synchronized(this.pendingAgents) {
+            ArrayList<Agent> handled = new ArrayList<>();
+            for (Agent agent : this.pendingAgents) {
+                this.minerMediator.addAgent(agent);
+                this.agents.add(agent);
+                handled.add(agent);
+            }
+            this.pendingAgents.removeAll(handled);
+        }
+    }
+
     public void bindAgent(Agent _agent) {
         if (this.agents.contains(_agent)) {
             return;
         }
-        this.agents.add(_agent);
+        this.pendingAgents.add(_agent);
     }
 
     public void setNotification(MinerNotification notification) {

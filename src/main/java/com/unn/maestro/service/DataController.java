@@ -53,6 +53,11 @@ public class DataController {
         port(Config.MAESTRO_PORT);
         enableCORS("*", "POST, GET, OPTIONS", null);
 
+        post("/brain/reset", (request, response) -> {
+            maestro.reset();
+            return SUCCESS;
+        });
+
         // NOTE: subordinated agents report to a Maestro instance and get Datacenter location from it
         get("/datacenter/origin", (request, response) -> {
             DatacenterOrigin locator = new DatacenterOrigin()
