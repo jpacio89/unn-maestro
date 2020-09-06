@@ -12,6 +12,7 @@ import retrofit2.converter.jackson.JacksonConverterFactory;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.stream.Stream;
 
 public class MinerMediator {
     final int LAYER_COUNT = 5;
@@ -33,6 +34,10 @@ public class MinerMediator {
                 .withAgent(agent)
                 .withLayer(layer)
         );
+    }
+
+    public void removeAgent(Agent agent) {
+        this.roles.removeIf((AgentRole role) -> role.getAgent().equals(agent));
     }
 
     public void work(MiningTarget target) {

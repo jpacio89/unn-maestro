@@ -63,6 +63,8 @@ public class DataController {
             return SUCCESS;
         });
 
+
+
         // NOTE: subordinated agents report to a Maestro instance and get Datacenter location from it
         get("/datacenter/origin", (request, response) -> {
             DatacenterOrigin locator = new DatacenterOrigin()
@@ -81,6 +83,12 @@ public class DataController {
         post("/agent/register", (request, response) -> {
             Agent agent = new Gson().fromJson(request.body(), Agent.class);
             maestro.bindAgent(agent);
+            return SUCCESS;
+        });
+
+        post("/agent/heartbeat", (request, response) -> {
+            Agent agent = new Gson().fromJson(request.body(), Agent.class);
+            maestro.hearbeat(agent);
             return SUCCESS;
         });
 
