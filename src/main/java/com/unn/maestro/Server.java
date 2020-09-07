@@ -1,4 +1,4 @@
-package com.unn.maestro.service;
+package com.unn.maestro;
 
 import com.google.gson.Gson;
 import com.unn.common.globals.NetworkConfig;
@@ -7,36 +7,18 @@ import com.unn.common.operations.DatacenterOrigin;
 import com.unn.common.operations.MiningTarget;
 import com.unn.common.server.StandardResponse;
 import com.unn.common.server.StatusResponse;
+import com.unn.common.utils.SparkUtils;
 import com.unn.maestro.Config;
 import com.unn.common.mining.MinerNotification;
+import com.unn.maestro.service.Maestro;
 
 import static spark.Spark.*;
 
-public class DataController {
+public class Server {
     static final String SUCCESS = new Gson().toJson(new StandardResponse(StatusResponse.SUCCESS));
     static Maestro maestro;
 
-    public DataController() { }
-
-    private static void enableCORS(final String origin, final String methods, final String headers) {
-        options("/*", (request, response) -> {
-            String accessControlRequestHeaders = request.headers("Access-Control-Request-Headers");
-            if (accessControlRequestHeaders != null) {
-                response.header("Access-Control-Allow-Headers", accessControlRequestHeaders);
-            }
-            String accessControlRequestMethod = request.headers("Access-Control-Request-Method");
-            if (accessControlRequestMethod != null) {
-                response.header("Access-Control-Allow-Methods", accessControlRequestMethod);
-            }
-            return "OK";
-        });
-
-        before((request, response) -> {
-            response.header("Access-Control-Allow-Origin", origin);
-            response.header("Access-Control-Request-Method", methods);
-            response.type("application/json");
-        });
-    }
+    public Server() { }
 
     public static void serve() {
         initMaestro();
@@ -56,14 +38,12 @@ public class DataController {
 
     private static void initRoutes() {
         port(NetworkConfig.MAESTRO_PORT);
-        enableCORS("*", "POST, GET, OPTIONS", null);
+        SparkUtils.enableCORS("*", "POST, GET, OPTIONS", null);
 
         post("/brain/reset", (request, response) -> {
             maestro.reset();
             return SUCCESS;
         });
-
-
 
         // NOTE: subordinated agents report to a Maestro instance and get Datacenter location from it
         get("/datacenter/origin", (request, response) -> {
