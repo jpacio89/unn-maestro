@@ -10,7 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 
 public class Maestro {
-    final int MAX_AWOL_TIME = 15000;
+    final int MAX_AWOL_TIME = 30000;
     final int SLEEP = 1000;
     ArrayList<Agent> agents;
     List<Agent> pendingAgents;
@@ -26,7 +26,7 @@ public class Maestro {
         this.minerMediator = new MinerMediator();
         this.aliveTimes = new HashMap<>();
         this.minerMediator.init();
-        this.pendingAgents = Collections.synchronizedList(new ArrayList<Agent>());
+        this.pendingAgents = Collections.synchronizedList(new ArrayList<>());
     }
 
     public void reset() { }
@@ -78,6 +78,7 @@ public class Maestro {
     }
 
     public void hearbeat(Agent agent) {
+        System.out.println(String.format("|Maestro| Heartbeat %s", agent.getUuid()));
         this.aliveTimes.put(agent, System.currentTimeMillis());
     }
 
