@@ -104,5 +104,19 @@ public class Maestro {
 
     public void storeMiningReport(MiningReport report) {
         this.reports.put(report.getRole(), report);
+        this.printReports();
+    }
+
+    public void printReports() {
+        String s = this.reports.entrySet().stream()
+            .map(entry -> {
+                AgentRole role = entry.getKey();
+                String uuid = role.getAgent().getUuid();
+                int layer = role.getLayer();
+                String report = entry.getValue().toString();
+                return String.format("%s (layer %d)\n%s\n\n", uuid, layer, report);
+            })
+            .reduce("", String::concat);
+        System.out.println(s);
     }
 }
