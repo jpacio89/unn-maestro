@@ -2,13 +2,14 @@ package com.unn.maestro;
 
 import com.google.gson.Gson;
 import com.unn.common.globals.NetworkConfig;
+import com.unn.common.mining.MiningReport;
 import com.unn.common.operations.Agent;
+import com.unn.common.operations.AgentRole;
 import com.unn.common.operations.DatacenterOrigin;
 import com.unn.common.operations.MiningTarget;
 import com.unn.common.server.StandardResponse;
 import com.unn.common.server.StatusResponse;
 import com.unn.common.utils.SparkUtils;
-import com.unn.maestro.Config;
 import com.unn.common.mining.MinerNotification;
 import com.unn.maestro.service.Maestro;
 
@@ -62,13 +63,19 @@ public class Server {
 
         post("/agent/register", (request, response) -> {
             Agent agent = new Gson().fromJson(request.body(), Agent.class);
-            maestro.bindAgent(agent);
+            maestro.bindAgentRole(new AgentRole().withAgent(agent));
             return SUCCESS;
         });
 
         post("/agent/heartbeat", (request, response) -> {
-            Agent agent = new Gson().fromJson(request.body(), Agent.class);
+            AgentRole agent = new Gson().fromJson(request.body(), AgentRole.class);
             maestro.hearbeat(agent);
+            return SUCCESS;
+        });
+
+        post("/mining/report", (request, response) -> {
+            MiningReport report = new Gson().fromJson(request.body(), MiningReport.class);
+            maestro.storeMiningReport(report);
             return SUCCESS;
         });
 

@@ -1,6 +1,8 @@
 package com.unn.maestro.service;
 
+import com.unn.common.mining.MiningReport;
 import com.unn.common.operations.Agent;
+import com.unn.common.operations.AgentRole;
 import com.unn.common.operations.MiningTarget;
 import com.unn.common.mining.MinerNotification;
 
@@ -12,11 +14,12 @@ import java.util.List;
 public class Maestro {
     final int MAX_AWOL_TIME = 30000;
     final int SLEEP = 1000;
-    ArrayList<Agent> agents;
-    List<Agent> pendingAgents;
+    ArrayList<AgentRole> agents;
+    List<AgentRole> pendingAgents;
     MiningTarget target;
     MinerMediator minerMediator;
-    HashMap<Agent, Long> aliveTimes;
+    HashMap<AgentRole, Long> aliveTimes;
+    HashMap<AgentRole, MiningReport> reports;
 
     public Maestro() { }
 
@@ -25,6 +28,7 @@ public class Maestro {
         this.pendingAgents = new ArrayList<>();
         this.minerMediator = new MinerMediator();
         this.aliveTimes = new HashMap<>();
+        this.reports = new HashMap<>();
         this.minerMediator.init();
         this.pendingAgents = Collections.synchronizedList(new ArrayList<>());
     }
@@ -53,9 +57,9 @@ public class Maestro {
 
     public void handlePendingAgents() {
         synchronized(this.pendingAgents) {
-            ArrayList<Agent> handled = new ArrayList<>();
-            for (Agent agent : this.pendingAgents) {
-                System.out.println(String.format("|Maestro| Binding agent %s", agent.getUuid()));
+            ArrayList<AgentRole> handled = new ArrayList<>();
+            for (AgentRole agent : this.pendingAgents) {
+                System.out.println(String.format("|Maestro| Binding agent %s", agent.getAgent().getUuid()));
                 this.minerMediator.addAgent(agent);
                 this.agents.add(agent);
                 this.aliveTimes.put(agent, System.currentTimeMillis());
@@ -65,11 +69,11 @@ public class Maestro {
         }
     }
 
-    public void bindAgent(Agent _agent) {
+    public void bindAgentRole(AgentRole _agent) {
         if (this.agents.contains(_agent)) {
             return;
         }
-        System.out.println(String.format("|Maestro| Request to bind agent %s", _agent.getUuid()));
+        System.out.println(String.format("|Maestro| Request to bind agent %s", _agent.getAgent().getUuid()));
         this.pendingAgents.add(_agent);
     }
 
@@ -77,23 +81,28 @@ public class Maestro {
         this.minerMediator.setNotification(notification);
     }
 
-    public void hearbeat(Agent agent) {
-        System.out.println(String.format("|Maestro| Heartbeat %s", agent.getUuid()));
+    public void hearbeat(AgentRole agent) {
+        System.out.println(String.format("|Maestro| Heartbeat %s", agent.getAgent().getUuid()));
         this.aliveTimes.put(agent, System.currentTimeMillis());
     }
 
     public void cleanupAgents() {
-        ArrayList<Agent> toRemove = new ArrayList<>();
+        ArrayList<AgentRole> toRemove = new ArrayList<>();
         this.agents.stream()
-            .filter((Agent agent) -> this.aliveTimes.get(agent) < System.currentTimeMillis() - MAX_AWOL_TIME)
-            .forEach((Agent agent) -> {
+            .filter((AgentRole agent) -> !this.reports.containsKey(agent) &&
+                this.aliveTimes.get(agent) < System.currentTimeMillis() - MAX_AWOL_TIME)
+            .forEach((AgentRole agent) -> {
                 toRemove.add(agent);
             });
-        for (Agent agent : toRemove) {
-            System.out.println(String.format("|Maestro| Removing agent (AWOL) %s", agent.getUuid()));
+        for (AgentRole agent : toRemove) {
+            System.out.println(String.format("|Maestro| Removing agent (AWOL) %s", agent.getAgent().getUuid()));
             this.minerMediator.removeAgent(agent);
             this.aliveTimes.remove(agent);
             this.agents.remove(agent);
         }
+    }
+
+    public void storeMiningReport(MiningReport report) {
+        this.reports.put(report.getRole(), report);
     }
 }

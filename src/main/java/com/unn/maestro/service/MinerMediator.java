@@ -12,7 +12,6 @@ import retrofit2.converter.jackson.JacksonConverterFactory;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.stream.Stream;
 
 public class MinerMediator {
     final int LAYER_COUNT = 5;
@@ -28,16 +27,13 @@ public class MinerMediator {
         this.notifications = new HashMap<>();
     }
 
-    public void addAgent(Agent agent) {
+    public void addAgent(AgentRole agent) {
         int layer = this.getLayer();
-        this.roles.add(new AgentRole()
-                .withAgent(agent)
-                .withLayer(layer)
-        );
+        this.roles.add(agent.withLayer(layer));
     }
 
-    public void removeAgent(Agent agent) {
-        this.roles.removeIf((AgentRole role) -> role.getAgent().equals(agent));
+    public void removeAgent(AgentRole agent) {
+        this.roles.removeIf((AgentRole role) -> role.equals(agent));
     }
 
     public void work(MiningTarget target) {
@@ -73,28 +69,6 @@ public class MinerMediator {
             e.printStackTrace();
         }
     }
-
-    /*void assignRoles(ArrayList<Agent> _agents) {
-        this.roles = new ArrayList<>();
-        int count = 0;
-        for (Agent agent : _agents) {
-            if (!this.ofType(agent)) {
-                continue;
-            }
-            this.roles.add(new AgentRole()
-                .withAgent(agent)
-                .withLayer(0)
-            );
-            count++;
-        }
-        int i = 0;
-        for (AgentRole agent : this.roles) {
-            int layer = this.getLayer(i, count);
-            this.roles.get(i)
-                .withLayer(layer);
-            i++;
-        }
-    }*/
 
     int getLayer() {
         long roleCount = this.roles.size();
