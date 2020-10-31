@@ -112,9 +112,9 @@ public class Maestro {
             .map(entry -> {
                 AgentRole role = entry.getKey();
                 String uuid = role.getAgent().getUuid();
-                int layer = role.getLayer();
+                int layer = role.getLayer() + 1;
                 String report = entry.getValue().toString();
-                return String.format("%s (layer %d)\n%s\n\n", uuid, layer, report);
+                return String.format("\n--------------------- MINING REPORTS ---------------------\nAgent %s (layer %d)\n%s", uuid, layer, report);
             })
             .reduce("", String::concat);
         System.out.println(s);
