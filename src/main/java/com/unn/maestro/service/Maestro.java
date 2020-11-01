@@ -107,6 +107,10 @@ public class Maestro {
         this.printReports();
     }
 
+    public void deadEnd(AgentRole role) {
+
+    }
+
     public void printReports() {
         String s = this.reports.entrySet().stream()
             .map(entry -> {

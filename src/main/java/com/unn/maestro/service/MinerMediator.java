@@ -20,6 +20,8 @@ public class MinerMediator {
     ArrayList<AgentRole> roles;
     HashMap<Agent, MinerNotification> notifications;
 
+
+
     public MinerMediator() { }
 
     public void init() {

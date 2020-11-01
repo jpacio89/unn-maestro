@@ -84,6 +84,13 @@ public class Server {
             maestro.setNotification(notification);
             return SUCCESS;
         });
+
+        post("/mining/deadend", (request, response) -> {
+            AgentRole role = new Gson().fromJson(request.body(), AgentRole.class);
+            maestro.deadEnd(role);
+            return SUCCESS;
+        });
+
     }
 
 }
