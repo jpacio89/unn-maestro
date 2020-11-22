@@ -1,6 +1,7 @@
 package com.unn.maestro;
 
 import com.google.gson.Gson;
+import com.unn.common.dataset.Dataset;
 import com.unn.common.globals.NetworkConfig;
 import com.unn.common.mining.MiningReport;
 import com.unn.common.operations.Agent;
@@ -12,29 +13,40 @@ import com.unn.common.server.StatusResponse;
 import com.unn.common.utils.SparkUtils;
 import com.unn.common.mining.MinerNotification;
 import com.unn.maestro.service.Maestro;
+import com.unn.maestro.transformers.DataListener;
+import com.unn.maestro.transformers.Transformer;
+import com.unn.maestro.transformers.temporal.ShortTermMemorizer;
+
+import java.util.ArrayList;
 
 import static spark.Spark.*;
 
 public class Server {
     static final String SUCCESS = new Gson().toJson(new StandardResponse(StatusResponse.SUCCESS));
     static Maestro maestro;
+    static DataListener transformerListener;
 
     public Server() { }
 
     public static void serve() {
         initMaestro();
+        initTransformers();
         initRoutes();
+    }
+
+    private static void initTransformers() {
+        transformerListener = new DataListener();
+        ArrayList<Transformer> transformers = new ArrayList<>();
+        transformers.add(new ShortTermMemorizer());
+        // TODO: add namespaces
+        transformerListener.init(transformers, null);
+        new Thread(() -> transformerListener.run()).start();
     }
 
     private static void initMaestro() {
         maestro = new Maestro();
         maestro.init();
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                maestro.run();
-            }
-        }).start();
+        new Thread(() -> maestro.run()).start();
     }
 
     private static void initRoutes() {
@@ -88,6 +100,12 @@ public class Server {
         post("/mining/deadend", (request, response) -> {
             AgentRole role = new Gson().fromJson(request.body(), AgentRole.class);
             maestro.deadEnd(role);
+            return SUCCESS;
+        });
+
+        post("/transformer/data", (request, response) -> {
+            Dataset dataset = new Gson().fromJson(request.body(), Dataset.class);
+            transformerListener.processDataset(dataset);
             return SUCCESS;
         });
 
