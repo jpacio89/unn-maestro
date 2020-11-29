@@ -1,9 +1,13 @@
 package com.unn.maestro.transformers.temporal;
 
 import com.unn.common.dataset.*;
+import com.unn.common.server.services.DatacenterService;
+import com.unn.common.utils.Utils;
 import com.unn.maestro.transformers.Transformer;
 import javafx.util.Pair;
+import retrofit2.Call;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -11,25 +15,69 @@ public class ShortTermMemorizer extends Transformer {
     int POOL_SIZE = 100;
     int MEMORY_ROW_COUNT = 5;
 
-    List<String> features;
-    ArrayList<Pair<Integer, Row>> pool;
-    int maxProcessedTime = -1;
+    HashMap<String, MemoryHolder> holders;
 
     public ShortTermMemorizer() {
-        this.pool = new ArrayList<>();
+        this.holders = new HashMap<>();
     }
 
     public void run() {
-        // TODO: step 1 -> get feature selection
-        // TODO: step 2 -> register listeners
-        // TODO: step 3 -> register transformed dataset
+        while (true) {
+            ArrayList<String> namespaces = getAllNamespaces();
+            namespaces.forEach(namespace -> {
+                if (!this.holders.containsKey(namespace)) {
+                    this.holders.put(namespace, new MemoryHolder());
+                }
+                MemoryHolder holder = this.holders.get(namespace);
+                while (true) {
+                    Dataset dataset = getNamespaceData(namespace, holder.getMaxProcessedTime());
+                    if (dataset == null) {
+                        break;
+                    }
+                    this.processDataset(holder, dataset);
+                }
+            });
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
-    @Override
-    public void addDaset(Dataset dataset) {
+    public void processDataset(MemoryHolder holder, Dataset dataset) {
         this.addToPool(dataset);
-        Dataset dataset = this.produceTransformation();
-        // TODO: push dataset to datacenter
+        Dataset transDataset = this.produceTransformation();
+        // TODO: step 3 -> register transformed dataset
+        this.pushMemoryData(transDataset);
+        // TODO: update max processed time
+    }
+
+    private Dataset getNamespaceData(String namespace, int startTime) {
+        DatacenterService service = Utils.getDatacenter();
+        Dataset dataset = null;
+        try {
+            dataset = service.getNamespaceData(namespace, startTime).execute().body();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return dataset;
+    }
+
+    private void pushMemoryData(Dataset transDataset) {
+        // TODO: implement
+    }
+
+    private ArrayList<String> getAllNamespaces() {
+        DatacenterService service = Utils.getDatacenter();
+        Call<ArrayList<String>> call = service.getNamespaces();
+        try {
+            ArrayList<String> namespaces = call.execute().body();
+            return namespaces;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     private Dataset produceTransformation() {
