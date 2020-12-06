@@ -1,6 +1,7 @@
 package com.unn.maestro.transformers.temporal;
 
 import com.unn.common.dataset.*;
+import com.unn.common.server.NetworkUtils;
 import com.unn.common.server.services.DatacenterService;
 import com.unn.common.utils.Utils;
 import com.unn.maestro.transformers.Transformer;
@@ -49,10 +50,10 @@ public class ShortTermMemorizer extends Transformer {
         this.addToPool(holder, dataset);
         Dataset transDataset = this.produceTransformation(holder);
         if (holder.getMaxProcessedTime() == 0) {
-            this.registerDataset();
+            NetworkUtils.registerAgent(transDataset.getDescriptor());
+
         }
-        // TODO: step 3 -> register transformed dataset
-        this.pushMemoryData(transDataset);
+        NetworkUtils.uploadDataset(transDataset);
         // TODO: update max processed time
     }
 
@@ -65,14 +66,6 @@ public class ShortTermMemorizer extends Transformer {
             e.printStackTrace();
         }
         return dataset;
-    }
-
-    private void registerDataset() {
-        // TODO: implement
-    }
-
-    private void pushMemoryData(Dataset transDataset) {
-        // TODO: implement
     }
 
     private ArrayList<String> getAllNamespaces() {
