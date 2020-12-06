@@ -46,8 +46,11 @@ public class ShortTermMemorizer extends Transformer {
     }
 
     public void processDataset(MemoryHolder holder, Dataset dataset) {
-        this.addToPool(dataset);
-        Dataset transDataset = this.produceTransformation();
+        this.addToPool(holder, dataset);
+        Dataset transDataset = this.produceTransformation(holder);
+        if (holder.getMaxProcessedTime() == 0) {
+            this.registerDataset();
+        }
         // TODO: step 3 -> register transformed dataset
         this.pushMemoryData(transDataset);
         // TODO: update max processed time
@@ -62,6 +65,10 @@ public class ShortTermMemorizer extends Transformer {
             e.printStackTrace();
         }
         return dataset;
+    }
+
+    private void registerDataset() {
+        // TODO: implement
     }
 
     private void pushMemoryData(Dataset transDataset) {
@@ -80,20 +87,20 @@ public class ShortTermMemorizer extends Transformer {
         return null;
     }
 
-    private Dataset produceTransformation() {
-        String[] memFeatures = getMemoryFeatures();
+    private Dataset produceTransformation(MemoryHolder holder) {
+        String[] memFeatures = getMemoryFeatures(holder);
         ArrayList<Row> rows = new ArrayList<>();
-        for (int i = pool.size() - 1; i >= 0; i--) {
-            Pair<Integer, Row> entry = pool.get(i);
+        for (int i = holder.getPool().size() - 1; i >= 0; i--) {
+            Pair<Integer, Row> entry = holder.getPool().get(i);
             Integer time = entry.getKey();
-            if (time <= maxProcessedTime) {
+            if (time <= holder.getMaxProcessedTime()) {
                 break;
             }
             Row memRow = new Row();
             // TODO: fix cases where i - j - 1 < 0
             ArrayList<String> memValues = new ArrayList<>();
             for (int j = 0; j < MEMORY_ROW_COUNT; ++j) {
-                Pair<Integer, Row> memEntry = pool.get(i - j - 1);
+                Pair<Integer, Row> memEntry = holder.getPool().get(i - j - 1);
                 Row row = memEntry.getValue();
                 memValues.addAll(Arrays.stream(row.getValues())
                     .collect(Collectors.toCollection(ArrayList::new)));
@@ -108,11 +115,11 @@ public class ShortTermMemorizer extends Transformer {
             .withBody(new Body().withRows(rows.stream().toArray(Row[]::new)));
     }
 
-    private String[] getMemoryFeatures() {
+    private String[] getMemoryFeatures(MemoryHolder holder) {
         ArrayList<String> memFeatures = new ArrayList<>();
         for (int i = 0; i < MEMORY_ROW_COUNT; ++i) {
-            for (int j = 0; j < this.features.size(); ++j) {
-                String feature = features.get(j);
+            for (int j = 0; j < holder.getFeatures().size(); ++j) {
+                String feature = holder.getFeatures().get(j);
                 String name = String.format("mem_%s_%d", feature, i + 1);
                 memFeatures.add(name);
             }
@@ -120,26 +127,26 @@ public class ShortTermMemorizer extends Transformer {
         return memFeatures.stream().toArray(String[]::new);
     }
 
-    private boolean containsRow(int primerIndex, Row row) {
+    private boolean containsRow(MemoryHolder holder, int primerIndex, Row row) {
         // TODO: improve performance
-        return this.pool.stream()
+        return holder.getPool().stream()
             .filter(rowEntry -> rowEntry.getKey() == Integer.parseInt(row.getValues()[primerIndex]))
             .count() > 0;
     }
 
-    private void addToPool(Dataset dataset) {
-        this.features = Arrays.asList(dataset.getDescriptor().getHeader().getNames());
-        int primerIndex = features.indexOf("primer");
+    private void addToPool(MemoryHolder holder, Dataset dataset) {
+        holder.setFeatures(Arrays.asList(dataset.getDescriptor().getHeader().getNames()));
+        int primerIndex = holder.getFeatures().indexOf("primer");
         Arrays.stream(dataset.getBody().getRows()).forEach(row -> {
-            if (!containsRow(primerIndex, row)) {
+            if (!containsRow(holder, primerIndex, row)) {
                 int timer = Integer.parseInt(row.getValues()[primerIndex]);
-                this.pool.add(new Pair<>(timer, row));
+                holder.getPool().add(new Pair<>(timer, row));
             }
         });
-        this.pool.sort(Comparator.comparingInt(Pair::getKey));
-        if (this.pool.size() > POOL_SIZE) {
-            this.pool = this.pool.stream().limit(POOL_SIZE)
-                .collect(Collectors.toCollection(ArrayList::new));
+        holder.getPool().sort(Comparator.comparingInt(Pair::getKey));
+        if (holder.getPool().size() > POOL_SIZE) {
+            holder.setPool(holder.getPool().stream().limit(POOL_SIZE)
+                .collect(Collectors.toCollection(ArrayList::new)));
         }
     }
 
