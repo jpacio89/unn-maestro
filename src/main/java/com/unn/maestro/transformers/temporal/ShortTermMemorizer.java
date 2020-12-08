@@ -100,13 +100,17 @@ public class ShortTermMemorizer extends Transformer {
                 break;
             }
             Row memRow = new Row();
-            // TODO: fix cases where i - j - 1 < 0
             ArrayList<String> memValues = new ArrayList<>();
             for (int j = 0; j < MEMORY_ROW_COUNT; ++j) {
-                Pair<Integer, Row> memEntry = holder.getPool().get(i - j - 1);
-                Row row = memEntry.getValue();
-                memValues.addAll(Arrays.stream(row.getValues())
-                    .collect(Collectors.toCollection(ArrayList::new)));
+                if (i - j - 1 < 0) {
+                    List<String> unknowns = Collections.nCopies(memFeatures.length, "?");
+                    memValues.addAll(unknowns);
+                } else {
+                    Pair<Integer, Row> memEntry = holder.getPool().get(i - j - 1);
+                    Row row = memEntry.getValue();
+                    memValues.addAll(Arrays.stream(row.getValues())
+                            .collect(Collectors.toCollection(ArrayList::new)));
+                }
             }
             memRow.withValues(memValues.stream().toArray(String[]::new));
             rows.add(memRow);
