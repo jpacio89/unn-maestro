@@ -54,7 +54,7 @@ public class ShortTermMemorizer extends Transformer {
 
         }
         NetworkUtils.uploadDataset(transDataset);
-        // TODO: update max processed time
+        holder.setMaxProcessedTime(getLastTime(holder, dataset));
     }
 
     private Dataset getNamespaceData(String namespace, int startTime) {
@@ -78,6 +78,16 @@ public class ShortTermMemorizer extends Transformer {
             e.printStackTrace();
         }
         return null;
+    }
+
+    private int getLastTime(MemoryHolder holder, Dataset dataset) {
+        String[] memFeatures = getMemoryFeatures(holder);
+        ArrayList<String> features = Arrays.stream(memFeatures).collect(Collectors.toCollection(ArrayList::new));
+        int index = features.indexOf("primer");
+        features.get(index);
+
+        Row[] rows = dataset.getBody().getRows();
+        return Integer.parseInt(rows[rows.length - 1].getValues()[index]);
     }
 
     private Dataset produceTransformation(MemoryHolder holder) {
@@ -106,6 +116,7 @@ public class ShortTermMemorizer extends Transformer {
         Dataset dataset = new Dataset()
             .withDescriptor(descriptor)
             .withBody(new Body().withRows(rows.stream().toArray(Row[]::new)));
+        return dataset;
     }
 
     private String[] getMemoryFeatures(MemoryHolder holder) {
