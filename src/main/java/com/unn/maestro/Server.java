@@ -39,8 +39,9 @@ public class Server {
         ArrayList<Transformer> transformers = new ArrayList<>();
         transformers.add(new ShortTermMemorizer());
         // TODO: add namespaces
-        transformerListener.init(transformers, null);
-        new Thread(() -> transformerListener.run()).start();
+        //transformerListener.init(transformers, null);
+        //new Thread(() -> transformerListener.run()).start();
+        transformers.forEach((transformer) -> new Thread(() -> transformer.run()).start());
     }
 
     private static void initMaestro() {
