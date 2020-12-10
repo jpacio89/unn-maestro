@@ -85,7 +85,6 @@ public class ShortTermMemorizer extends Transformer {
         ArrayList<String> features = Arrays.stream(memFeatures).collect(Collectors.toCollection(ArrayList::new));
         int index = features.indexOf("primer");
         features.get(index);
-
         Row[] rows = dataset.getBody().getRows();
         return Integer.parseInt(rows[rows.length - 1].getValues()[index]);
     }
