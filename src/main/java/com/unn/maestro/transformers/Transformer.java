@@ -6,8 +6,6 @@ public abstract class Transformer {
 
     public Transformer() {}
 
-    public abstract void addDaset(Dataset dataset);
-
     public abstract void init();
 
     public abstract void run();

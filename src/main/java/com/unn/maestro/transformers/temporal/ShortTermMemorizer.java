@@ -3,6 +3,7 @@ package com.unn.maestro.transformers.temporal;
 import com.unn.common.dataset.*;
 import com.unn.common.server.NetworkUtils;
 import com.unn.common.server.services.DatacenterService;
+import com.unn.common.utils.CSVHelper;
 import com.unn.common.utils.Utils;
 import com.unn.maestro.transformers.Transformer;
 import javafx.util.Pair;
@@ -26,13 +27,16 @@ public class ShortTermMemorizer extends Transformer {
         while (true) {
             ArrayList<String> namespaces = getAllNamespaces();
             namespaces.forEach(namespace -> {
+                if (namespace == null) {
+                    return;
+                }
                 if (!this.holders.containsKey(namespace)) {
-                    this.holders.put(namespace, new MemoryHolder());
+                    this.holders.put(namespace, new MemoryHolder(namespace));
                 }
                 MemoryHolder holder = this.holders.get(namespace);
                 while (true) {
                     Dataset dataset = getNamespaceData(namespace, holder.getMaxProcessedTime());
-                    if (dataset == null) {
+                    if (dataset == null || dataset.size() == 0) {
                         break;
                     }
                     this.processDataset(holder, dataset);
@@ -49,19 +53,20 @@ public class ShortTermMemorizer extends Transformer {
     public void processDataset(MemoryHolder holder, Dataset dataset) {
         this.addToPool(holder, dataset);
         Dataset transDataset = this.produceTransformation(holder);
-        if (holder.getMaxProcessedTime() == 0) {
+        if (holder.getMaxProcessedTime() <= 0) {
             NetworkUtils.registerAgent(transDataset.getDescriptor());
-
         }
         NetworkUtils.uploadDataset(transDataset);
-        holder.setMaxProcessedTime(getLastTime(holder, dataset));
+        if (dataset.getBody().getRows().length > 0) {
+            holder.setMaxProcessedTime(getLastTime(holder, dataset));
+        }
     }
 
     private Dataset getNamespaceData(String namespace, int startTime) {
         DatacenterService service = Utils.getDatacenter();
         Dataset dataset = null;
         try {
-            dataset = service.getNamespaceData(namespace, startTime).execute().body();
+            dataset = new CSVHelper().parse(service.getNamespaceData(namespace, startTime).execute().body());
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -84,7 +89,6 @@ public class ShortTermMemorizer extends Transformer {
         String[] memFeatures = getMemoryFeatures(holder);
         ArrayList<String> features = Arrays.stream(memFeatures).collect(Collectors.toCollection(ArrayList::new));
         int index = features.indexOf("primer");
-        features.get(index);
         Row[] rows = dataset.getBody().getRows();
         return Integer.parseInt(rows[rows.length - 1].getValues()[index]);
     }
@@ -102,19 +106,28 @@ public class ShortTermMemorizer extends Transformer {
             ArrayList<String> memValues = new ArrayList<>();
             for (int j = 0; j < MEMORY_ROW_COUNT; ++j) {
                 if (i - j - 1 < 0) {
-                    List<String> unknowns = Collections.nCopies(memFeatures.length, "?");
+                    List<String> unknowns = Collections.nCopies(holder.getFeatures().size() - 2, "-");
                     memValues.addAll(unknowns);
                 } else {
                     Pair<Integer, Row> memEntry = holder.getPool().get(i - j - 1);
                     Row row = memEntry.getValue();
+                    if (j == 0) {
+                        // TODO: improve search for primer
+                        memValues.add(row.getValues()[1]);
+                    }
                     memValues.addAll(Arrays.stream(row.getValues())
-                            .collect(Collectors.toCollection(ArrayList::new)));
+                        .skip(2)
+                        .collect(Collectors.toCollection(ArrayList::new)));
                 }
+            }
+            if (memValues.size() != memFeatures.length) {
+                System.err.println("Mismatch " + i);
             }
             memRow.withValues(memValues.stream().toArray(String[]::new));
             rows.add(memRow);
         }
-        DatasetDescriptor descriptor = new DatasetDescriptor();
+        DatasetDescriptor descriptor = new DatasetDescriptor()
+            .withNamespace(String.format("shortmem.%s", holder.getNamespace()));
         descriptor.withHeader(new Header().withNames(memFeatures));
         Dataset dataset = new Dataset()
             .withDescriptor(descriptor)
@@ -124,9 +137,13 @@ public class ShortTermMemorizer extends Transformer {
 
     private String[] getMemoryFeatures(MemoryHolder holder) {
         ArrayList<String> memFeatures = new ArrayList<>();
+        memFeatures.add("primer");
         for (int i = 0; i < MEMORY_ROW_COUNT; ++i) {
             for (int j = 0; j < holder.getFeatures().size(); ++j) {
                 String feature = holder.getFeatures().get(j);
+                if (feature.equals("id") || feature.equals("primer")) {
+                    continue;
+                }
                 String name = String.format("mem_%s_%d", feature, i + 1);
                 memFeatures.add(name);
             }

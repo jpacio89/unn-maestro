@@ -8,13 +8,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MemoryHolder {
+    String namespace;
     List<String> features;
     DatasetDescriptor memDescriptor;
     ArrayList<Pair<Integer, Row>> pool;
     int maxProcessedTime = -1;
 
-    public MemoryHolder() {
+    public MemoryHolder(String namespace) {
         this.pool = new ArrayList<>();
+        this.namespace = namespace;
     }
 
     public DatasetDescriptor getMemDescriptor() {
@@ -47,5 +49,13 @@ public class MemoryHolder {
 
     public void setFeatures(List<String> features) {
         this.features = features;
+    }
+
+    public String getNamespace() {
+        return namespace;
+    }
+
+    public void setNamespace(String namespace) {
+        this.namespace = namespace;
     }
 }
