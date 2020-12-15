@@ -27,7 +27,7 @@ public class ShortTermMemorizer extends Transformer {
         while (true) {
             ArrayList<String> namespaces = getAllNamespaces();
             namespaces.forEach(namespace -> {
-                if (namespace == null) {
+                if (namespace == null || namespace.contains("shortmem")) {
                     return;
                 }
                 if (!this.holders.containsKey(namespace)) {
@@ -105,24 +105,28 @@ public class ShortTermMemorizer extends Transformer {
             Row memRow = new Row();
             ArrayList<String> memValues = new ArrayList<>();
             for (int j = 0; j < MEMORY_ROW_COUNT; ++j) {
-                if (i - j - 1 < 0) {
+                int index = i - j;
+                if (index < 0) {
                     List<String> unknowns = Collections.nCopies(holder.getFeatures().size() - 2, "-");
                     memValues.addAll(unknowns);
                 } else {
-                    Pair<Integer, Row> memEntry = holder.getPool().get(i - j - 1);
+                    Pair<Integer, Row> memEntry = holder.getPool().get(index);
                     Row row = memEntry.getValue();
                     if (j == 0) {
+                        Pair<Integer, Row> primerEntry = holder.getPool().get(index);
                         // TODO: improve search for primer
-                        memValues.add(row.getValues()[1]);
+                        memValues.add(primerEntry.getValue().getValues()[1]);
                     }
                     memValues.addAll(Arrays.stream(row.getValues())
                         .skip(2)
                         .collect(Collectors.toCollection(ArrayList::new)));
                 }
             }
+
             if (memValues.size() != memFeatures.length) {
                 System.err.println("Mismatch " + i);
             }
+
             memRow.withValues(memValues.stream().toArray(String[]::new));
             rows.add(memRow);
         }
@@ -168,10 +172,10 @@ public class ShortTermMemorizer extends Transformer {
             }
         });
         holder.getPool().sort(Comparator.comparingInt(Pair::getKey));
-        if (holder.getPool().size() > POOL_SIZE) {
-            holder.setPool(holder.getPool().stream().limit(POOL_SIZE)
-                .collect(Collectors.toCollection(ArrayList::new)));
-        }
+        //if (holder.getPool().size() > POOL_SIZE) {
+            //holder.setPool(holder.getPool().stream().limit(POOL_SIZE)
+            //    .collect(Collectors.toCollection(ArrayList::new)));
+        //}
     }
 
     @Override
