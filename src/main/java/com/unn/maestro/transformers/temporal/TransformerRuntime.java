@@ -4,6 +4,7 @@ import com.unn.common.dataset.*;
 import com.unn.common.server.NetworkUtils;
 import com.unn.common.server.services.DatacenterService;
 import com.unn.common.utils.CSVHelper;
+import com.unn.common.utils.MultiplesHashMap;
 import com.unn.common.utils.Utils;
 import com.unn.maestro.transformers.Transformer;
 import javafx.util.Pair;
@@ -11,25 +12,28 @@ import retrofit2.Call;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.stream.Collectors;
 
-public class ShortTermMemorizer extends Transformer {
+public class TransformerRuntime extends Transformer {
     int POOL_SIZE = 100;
     int MEMORY_ROW_COUNT = 5;
 
+    MultiplesHashMap<String, Row> rowContainer;
     HashMap<String, MemoryHolder> holders;
+    Transformer transformer;
+    Square sd;
 
-    public ShortTermMemorizer() {
+    public TransformerRuntime(Transformer transformer) {
+        this.transformer = transformer;
         this.holders = new HashMap<>();
+        this.rowContainer = new MultiplesHashMap();
     }
 
     public void run() {
         while (true) {
             ArrayList<String> namespaces = getAllNamespaces();
+            // TODO: only first time
+            List<String> tNamespaces = this.transformer.init(namespaces);
             namespaces.forEach(namespace -> {
-                if (namespace == null || namespace.contains("shortmem")) {
-                    return;
-                }
                 if (!this.holders.containsKey(namespace)) {
                     this.holders.put(namespace, new MemoryHolder(namespace));
                 }
@@ -39,7 +43,22 @@ public class ShortTermMemorizer extends Transformer {
                     if (dataset == null || dataset.size() == 0) {
                         break;
                     }
-                    this.processDataset(holder, dataset);
+                    this.addToPool(holder, dataset);
+                    for (Row row : dataset.getBody().getRows()) {
+                        int primer = Integer.parseInt(row.getValues()[1]);
+                        for (String tNamespace : tNamespaces) {
+                            // TODO: ignore if transformed primer already added to the pool
+                            Pair<Integer, Row> item = this.transformer.process(tNamespace, primer);
+                            if (item != null) {
+                                this.rowContainer.put(tNamespace, item.getValue());
+                            }
+                        }
+                    }
+
+                    this.transformer.onDataset(dataset);
+                    Dataset publishable =
+                    // TODO: missing holder
+                    // this.processDataset(holder, dataset);
                 }
             });
             try {
@@ -50,13 +69,21 @@ public class ShortTermMemorizer extends Transformer {
         }
     }
 
-    public void processDataset(MemoryHolder holder, Dataset dataset) {
-        this.addToPool(holder, dataset);
-        Dataset transDataset = this.produceTransformation(holder);
+    public void processDataset(String tNamespace, MemoryHolder holder) {
+        DatasetDescriptor tDescriptor = this.transformer.getDescriptor(tNamespace);
+
+        // TODO: move this elsewhere
         if (holder.getMaxProcessedTime() <= 0) {
-            NetworkUtils.registerAgent(transDataset.getDescriptor());
+            NetworkUtils.registerAgent(tDescriptor);
         }
-        NetworkUtils.uploadDataset(transDataset);
+
+        ArrayList<Row> rows = this.rowContainer.get(tNamespace);
+        Body body = new Body().withRows(rows.stream().toArray(Row[]::new));
+        Dataset tDataset = new Dataset()
+            .withBody(body)
+            .withDescriptor(tDescriptor);
+        NetworkUtils.uploadDataset(tDataset);
+
         if (dataset.getBody().getRows().length > 0) {
             holder.setMaxProcessedTime(getLastTime(holder, dataset));
         }
@@ -83,76 +110,6 @@ public class ShortTermMemorizer extends Transformer {
             e.printStackTrace();
         }
         return null;
-    }
-
-    private int getLastTime(MemoryHolder holder, Dataset dataset) {
-        String[] memFeatures = getMemoryFeatures(holder);
-        ArrayList<String> features = Arrays.stream(memFeatures).collect(Collectors.toCollection(ArrayList::new));
-        int index = features.indexOf("primer");
-        Row[] rows = dataset.getBody().getRows();
-        return Integer.parseInt(rows[rows.length - 1].getValues()[index]);
-    }
-
-    private Dataset produceTransformation(MemoryHolder holder) {
-        String[] memFeatures = getMemoryFeatures(holder);
-        ArrayList<Row> rows = new ArrayList<>();
-        for (int i = holder.getPool().size() - 1; i >= 0; i--) {
-            Pair<Integer, Row> entry = holder.getPool().get(i);
-            Integer time = entry.getKey();
-            if (time <= holder.getMaxProcessedTime()) {
-                break;
-            }
-            Row memRow = new Row();
-            ArrayList<String> memValues = new ArrayList<>();
-            for (int j = 0; j < MEMORY_ROW_COUNT; ++j) {
-                int index = i - j;
-                if (index < 0) {
-                    List<String> unknowns = Collections.nCopies(holder.getFeatures().size() - 2, "-");
-                    memValues.addAll(unknowns);
-                } else {
-                    Pair<Integer, Row> memEntry = holder.getPool().get(index);
-                    Row row = memEntry.getValue();
-                    if (j == 0) {
-                        Pair<Integer, Row> primerEntry = holder.getPool().get(index);
-                        // TODO: improve search for primer
-                        memValues.add(primerEntry.getValue().getValues()[1]);
-                    }
-                    memValues.addAll(Arrays.stream(row.getValues())
-                        .skip(2)
-                        .collect(Collectors.toCollection(ArrayList::new)));
-                }
-            }
-
-            if (memValues.size() != memFeatures.length) {
-                System.err.println("Mismatch " + i);
-            }
-
-            memRow.withValues(memValues.stream().toArray(String[]::new));
-            rows.add(memRow);
-        }
-        DatasetDescriptor descriptor = new DatasetDescriptor()
-            .withNamespace(String.format("shortmem.%s", holder.getNamespace()));
-        descriptor.withHeader(new Header().withNames(memFeatures));
-        Dataset dataset = new Dataset()
-            .withDescriptor(descriptor)
-            .withBody(new Body().withRows(rows.stream().toArray(Row[]::new)));
-        return dataset;
-    }
-
-    private String[] getMemoryFeatures(MemoryHolder holder) {
-        ArrayList<String> memFeatures = new ArrayList<>();
-        memFeatures.add("primer");
-        for (int i = 0; i < MEMORY_ROW_COUNT; ++i) {
-            for (int j = 0; j < holder.getFeatures().size(); ++j) {
-                String feature = holder.getFeatures().get(j);
-                if (feature.equals("id") || feature.equals("primer")) {
-                    continue;
-                }
-                String name = String.format("mem_%s_%d", feature, i + 1);
-                memFeatures.add(name);
-            }
-        }
-        return memFeatures.stream().toArray(String[]::new);
     }
 
     private boolean containsRow(MemoryHolder holder, int primerIndex, Row row) {
