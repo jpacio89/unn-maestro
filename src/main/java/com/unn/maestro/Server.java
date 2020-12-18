@@ -16,6 +16,7 @@ import com.unn.maestro.service.Maestro;
 import com.unn.maestro.transformers.DataListener;
 import com.unn.maestro.transformers.Transformer;
 import com.unn.maestro.transformers.temporal.ShortTermMemorizer;
+import com.unn.maestro.transformers.temporal.TransformerRuntime;
 
 import java.util.ArrayList;
 
@@ -36,8 +37,10 @@ public class Server {
 
     private static void initTransformers() {
         transformerListener = new DataListener();
+        TransformerRuntime runtime = new TransformerRuntime();
+        runtime.add(new ShortTermMemorizer(runtime));
         ArrayList<Transformer> transformers = new ArrayList<>();
-        transformers.add(new ShortTermMemorizer());
+        transformers.add(new ShortTermMemorizer(runtime));
         // TODO: add namespaces
         //transformerListener.init(transformers, null);
         //new Thread(() -> transformerListener.run()).start();
