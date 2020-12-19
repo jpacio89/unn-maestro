@@ -13,14 +13,11 @@ import retrofit2.Call;
 import java.io.IOException;
 import java.util.*;
 
-public class TransformerRuntime extends Transformer {
-    int POOL_SIZE = 100;
-    int MEMORY_ROW_COUNT = 5;
-
+public class TransformerRuntime {
     MultiplesHashMap<String, Row> rowContainer;
     HashMap<String, MemoryHolder> holders;
     Transformer transformer;
-    Square sd;
+    List<String> tNamespaces;
 
     public TransformerRuntime(Transformer transformer) {
         this.transformer = transformer;
@@ -31,36 +28,56 @@ public class TransformerRuntime extends Transformer {
     public void run() {
         while (true) {
             ArrayList<String> namespaces = getAllNamespaces();
-            // TODO: only first time
-            List<String> tNamespaces = this.transformer.init(namespaces);
+
+            if (this.tNamespaces == null) {
+                this.tNamespaces = this.transformer.init(namespaces);
+            }
+
             namespaces.forEach(namespace -> {
                 if (!this.holders.containsKey(namespace)) {
                     this.holders.put(namespace, new MemoryHolder(namespace));
                 }
+
                 MemoryHolder holder = this.holders.get(namespace);
+
                 while (true) {
                     Dataset dataset = getNamespaceData(namespace, holder.getMaxProcessedTime());
+
                     if (dataset == null || dataset.size() == 0) {
                         break;
                     }
+
                     this.addToPool(holder, dataset);
+                    int maxPrimer = 0;
+
                     for (Row row : dataset.getBody().getRows()) {
                         int primer = Integer.parseInt(row.getValues()[1]);
-                        for (String tNamespace : tNamespaces) {
+                        maxPrimer = Math.max(primer, maxPrimer);
+
+                        for (String tNamespace : this.tNamespaces) {
                             // TODO: ignore if transformed primer already added to the pool
                             Pair<Integer, Row> item = this.transformer.process(tNamespace, primer);
+
                             if (item != null) {
+                                if (this.rowContainer.containsKey(tNamespace) &&
+                                    holder.getMaxProcessedTime() <= 0) {
+                                    NetworkUtils.registerAgent(this.transformer.getDescriptor(tNamespace));
+                                }
                                 this.rowContainer.put(tNamespace, item.getValue());
                             }
                         }
                     }
 
-                    this.transformer.onDataset(dataset);
-                    Dataset publishable =
-                    // TODO: missing holder
-                    // this.processDataset(holder, dataset);
+                    if (dataset.getBody().getRows().length > 0) {
+                        holder.setMaxProcessedTime(maxPrimer);
+                    }
+
+                    for (String tNamespace : tNamespaces) {
+                        this.processDataset(tNamespace);
+                    }
                 }
             });
+
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
@@ -69,24 +86,20 @@ public class TransformerRuntime extends Transformer {
         }
     }
 
-    public void processDataset(String tNamespace, MemoryHolder holder) {
-        DatasetDescriptor tDescriptor = this.transformer.getDescriptor(tNamespace);
+    public void processDataset(String tNamespace) {
+        ArrayList<Row> rows = this.rowContainer.get(tNamespace);
 
-        // TODO: move this elsewhere
-        if (holder.getMaxProcessedTime() <= 0) {
-            NetworkUtils.registerAgent(tDescriptor);
+        if (rows == null || rows.size() == 0) {
+            return;
         }
 
-        ArrayList<Row> rows = this.rowContainer.get(tNamespace);
+        DatasetDescriptor tDescriptor = this.transformer.getDescriptor(tNamespace);
+
         Body body = new Body().withRows(rows.stream().toArray(Row[]::new));
         Dataset tDataset = new Dataset()
             .withBody(body)
             .withDescriptor(tDescriptor);
         NetworkUtils.uploadDataset(tDataset);
-
-        if (dataset.getBody().getRows().length > 0) {
-            holder.setMaxProcessedTime(getLastTime(holder, dataset));
-        }
     }
 
     private Dataset getNamespaceData(String namespace, int startTime) {
@@ -134,7 +147,4 @@ public class TransformerRuntime extends Transformer {
             //    .collect(Collectors.toCollection(ArrayList::new)));
         //}
     }
-
-    @Override
-    public void init() { }
 }

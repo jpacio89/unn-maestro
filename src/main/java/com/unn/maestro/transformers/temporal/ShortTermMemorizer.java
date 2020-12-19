@@ -1,6 +1,7 @@
 package com.unn.maestro.transformers.temporal;
 
 import com.unn.common.dataset.*;
+import com.unn.common.utils.MultiplesHashMap;
 import com.unn.maestro.transformers.Transformer;
 import javafx.util.Pair;
 import java.util.*;
@@ -12,26 +13,29 @@ public class ShortTermMemorizer extends Transformer {
     List<String> namespaces;
     int MEMORY_ROW_COUNT = 5;
     HashMap<String, Header> headers;
+    MultiplesHashMap<String, String> relevantNamespaces;
 
     public ShortTermMemorizer(TransformerRuntime runtime) {
         this.runtime = runtime;
     }
 
     @Override
-    public List<String> init(List<String> namespaces) {
+    public MultiplesHashMap<String, String> init(List<String> namespaces) {
+        this.relevantNamespaces = new MultiplesHashMap<>();
         this.namespaces = namespaces;
-        return namespaces.stream()
+        namespaces.stream()
             .filter(namespace -> namespace != null && !namespace.contains("shortmem"))
-            .map(namespace -> {
+            .forEach(namespace -> {
                 String tNamespace = String.format("shortmem.%s", namespace);
-                this.initHeader(namespace, tNamespace);
-                return tNamespace;
-            })
-            .collect(Collectors.toCollection(ArrayList::new));
+                this.relevantNamespaces.put(tNamespace, namespace);
+            });
+        return this.relevantNamespaces;
     }
 
     @Override
     public DatasetDescriptor getDescriptor(String tNamespace) {
+        this.relevantNamespaces.get(tNamespace)
+            .forEach(namespace -> this.initHeader(namespace, tNamespace));
         DatasetDescriptor descriptor = new DatasetDescriptor()
             .withNamespace(tNamespace);
         descriptor.withHeader(this.headers.get(tNamespace));
