@@ -26,6 +26,21 @@ public class TransformerRuntime {
         this.rowContainer = new MultiplesHashMap();
     }
 
+    public static TransformerRuntime build(Class<ShortTermMemorizer> t) {
+        try {
+            return new TransformerRuntime(t.newInstance());
+        } catch (InstantiationException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public void start() {
+        new Thread(() -> run()).start();
+    }
+
     public void run() {
         while (true) {
             ArrayList<String> namespaces = getAllNamespaces();

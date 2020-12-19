@@ -13,19 +13,14 @@ import com.unn.common.server.StatusResponse;
 import com.unn.common.utils.SparkUtils;
 import com.unn.common.mining.MinerNotification;
 import com.unn.maestro.service.Maestro;
-import com.unn.maestro.transformers.DataListener;
-import com.unn.maestro.transformers.Transformer;
 import com.unn.maestro.transformers.temporal.ShortTermMemorizer;
 import com.unn.maestro.transformers.temporal.TransformerRuntime;
-
-import java.util.ArrayList;
 
 import static spark.Spark.*;
 
 public class Server {
     static final String SUCCESS = new Gson().toJson(new StandardResponse(StatusResponse.SUCCESS));
     static Maestro maestro;
-    static DataListener transformerListener;
 
     public Server() { }
 
@@ -36,15 +31,7 @@ public class Server {
     }
 
     private static void initTransformers() {
-        transformerListener = new DataListener();
-        TransformerRuntime runtime = new TransformerRuntime();
-        runtime.add(new ShortTermMemorizer(runtime));
-        ArrayList<Transformer> transformers = new ArrayList<>();
-        transformers.add(new ShortTermMemorizer(runtime));
-        // TODO: add namespaces
-        //transformerListener.init(transformers, null);
-        //new Thread(() -> transformerListener.run()).start();
-        transformers.forEach((transformer) -> new Thread(() -> transformer.run()).start());
+        TransformerRuntime.build(ShortTermMemorizer.class).start();
     }
 
     private static void initMaestro() {
@@ -109,7 +96,6 @@ public class Server {
 
         post("/transformer/data", (request, response) -> {
             Dataset dataset = new Gson().fromJson(request.body(), Dataset.class);
-            transformerListener.processDataset(dataset);
             return SUCCESS;
         });
 
