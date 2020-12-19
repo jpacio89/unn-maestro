@@ -19,11 +19,13 @@ public class TransformerRuntime {
     HashMap<String, MemoryHolder> holders;
     Transformer transformer;
     MultiplesHashMap<String, String> tNamespaces;
+    HashMap<String, HashMap<Integer, Integer>> rowPosition;
 
     public TransformerRuntime(Transformer transformer) {
         this.transformer = transformer;
         this.holders = new HashMap<>();
         this.rowContainer = new MultiplesHashMap();
+        this.rowPosition = new HashMap<>();
     }
 
     public static TransformerRuntime build(Class<ShortTermMemorizer> t) {
@@ -54,6 +56,7 @@ public class TransformerRuntime {
                     this.holders.put(namespace, new MemoryHolder(namespace));
                 }
 
+                this.rowPosition.put(namespace, new HashMap<>());
                 MemoryHolder holder = this.holders.get(namespace);
 
                 while (true) {
@@ -90,9 +93,7 @@ public class TransformerRuntime {
                         }
                     }
 
-                    if (dataset.getBody().getRows().length > 0) {
-                        holder.setMaxProcessedTime(maxPrimer);
-                    }
+                    holder.setMaxProcessedTime(maxPrimer);
 
                     for (String tNamespace : tNamespaces.keys()) {
                         this.processDataset(tNamespace);
@@ -164,6 +165,7 @@ public class TransformerRuntime {
         Arrays.stream(dataset.getBody().getRows()).forEach(row -> {
             if (!containsRow(holder, primerIndex, row)) {
                 int timer = Integer.parseInt(row.getValues()[primerIndex]);
+                this.rowPosition.get(holder.getNamespace()).put(timer, holder.getPool().size());
                 holder.getPool().add(new Pair<>(timer, row));
             }
         });
@@ -172,5 +174,11 @@ public class TransformerRuntime {
             //holder.setPool(holder.getPool().stream().limit(POOL_SIZE)
             //    .collect(Collectors.toCollection(ArrayList::new)));
         //}
+    }
+
+    public Row getRowByPrimer(String namespace, int primer) {
+        int position = this.rowPosition.get(namespace).get(primer);
+        return this.holders.get(namespace).getPool()
+            .get(position).getValue();
     }
 }

@@ -46,7 +46,7 @@ public class ShortTermMemorizer extends Transformer {
     public Pair<Integer, Row> process(String tNamespace, int primer) {
         Row memRow = new Row();
         ArrayList<String> memValues = new ArrayList<>();
-        Row currentRow = this.getRowByPrimer(primer);
+        Row currentRow = this.getRowByPrimer(tNamespace, primer);
         // TODO: improve search for primer
         int currentPrimer = Integer.parseInt(currentRow.getValues()[1]);
         memValues.add(currentRow.getValues()[1]);
@@ -58,7 +58,7 @@ public class ShortTermMemorizer extends Transformer {
                 List<String> unknowns = Collections.nCopies(this.header.getNames().length - 2, "-");
                 memValues.addAll(unknowns);
             } else {
-                Row row = this.getRowByPrimer(index);
+                Row row = this.getRowByPrimer(tNamespace, index);
                 memValues.addAll(Arrays.stream(row.getValues())
                     .skip(2)
                     .collect(Collectors.toCollection(ArrayList::new)));
@@ -89,11 +89,11 @@ public class ShortTermMemorizer extends Transformer {
             }
         }
         this.headers.put(transformedNamespace, new Header().withNames(memFeatures.stream()
-                .toArray(String[]::new)));
+            .toArray(String[]::new)));
     }
 
-    private Row getRowByPrimer(int primer) {
-        // TODO: implement
-        return null;
+    private Row getRowByPrimer(String tNamespace, int primer) {
+        String namespace = relevantNamespaces.get(tNamespace).get(0);
+        return this.runtime.getRowByPrimer(namespace, primer);
     }
 }
