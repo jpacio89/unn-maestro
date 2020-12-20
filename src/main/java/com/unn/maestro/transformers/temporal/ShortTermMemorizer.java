@@ -8,7 +8,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class ShortTermMemorizer extends Transformer {
-    Header header;
     TransformerRuntime runtime;
     List<String> namespaces;
     int MEMORY_ROW_COUNT = 5;
