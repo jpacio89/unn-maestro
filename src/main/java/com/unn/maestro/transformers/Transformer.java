@@ -11,6 +11,7 @@ import java.util.List;
 
 public abstract class Transformer {
     public Transformer() {}
+    public abstract void setRuntime(TransformerRuntime runtime);
     public abstract MultiplesHashMap<String, String> init(List<String> namespaces);
     public abstract Pair<Integer, Row> process(String tNamespace, int primer);
     public abstract DatasetDescriptor getDescriptor(String tNamespace);

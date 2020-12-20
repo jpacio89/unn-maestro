@@ -26,11 +26,12 @@ public class TransformerRuntime {
         this.holders = new HashMap<>();
         this.rowContainer = new MultiplesHashMap();
         this.rowPosition = new HashMap<>();
+        this.transformer.setRuntime(this);
     }
 
-    public static TransformerRuntime build(Class<ShortTermMemorizer> t) {
+    public static TransformerRuntime build(Class<ShortTermMemorizer> tClass) {
         try {
-            return new TransformerRuntime(t.newInstance());
+            return new TransformerRuntime(tClass.newInstance());
         } catch (InstantiationException e) {
             e.printStackTrace();
         } catch (IllegalAccessException e) {
@@ -84,7 +85,7 @@ public class TransformerRuntime {
                             Pair<Integer, Row> item = this.transformer.process(tNamespace, primer);
 
                             if (item != null) {
-                                if (this.rowContainer.containsKey(tNamespace) &&
+                                if (!this.rowContainer.containsKey(tNamespace) &&
                                     holder.getMaxProcessedTime() <= 0) {
                                     NetworkUtils.registerAgent(this.transformer.getDescriptor(tNamespace));
                                 }
@@ -177,6 +178,9 @@ public class TransformerRuntime {
     }
 
     public Row getRowByPrimer(String namespace, int primer) {
+        if (!this.rowPosition.get(namespace).containsKey(primer)) {
+            return null;
+        }
         int position = this.rowPosition.get(namespace).get(primer);
         return this.holders.get(namespace).getPool()
             .get(position).getValue();

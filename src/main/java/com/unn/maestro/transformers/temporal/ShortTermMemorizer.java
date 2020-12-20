@@ -15,7 +15,10 @@ public class ShortTermMemorizer extends Transformer {
     HashMap<String, Header> headers;
     MultiplesHashMap<String, String> relevantNamespaces;
 
-    public ShortTermMemorizer(TransformerRuntime runtime) {
+    public ShortTermMemorizer() { }
+
+    @Override
+    public void setRuntime(TransformerRuntime runtime) {
         this.runtime = runtime;
     }
 
@@ -53,21 +56,23 @@ public class ShortTermMemorizer extends Transformer {
 
         // TODO: what if step is not 1?
         for (int step = 0; step < MEMORY_ROW_COUNT; ++step) {
-            int index = primer - step;
-            if (index < 0) {
-                List<String> unknowns = Collections.nCopies(this.header.getNames().length - 2, "-");
+            int shiftedPrimer = primer - step;
+            Row row = this.getRowByPrimer(tNamespace, shiftedPrimer);
+            if (row == null) {
+                String namespace = relevantNamespaces.get(tNamespace).get(0);
+                int unknownCount = (this.runtime.getFeatures(namespace).size() - 2);
+                List<String> unknowns = Collections.nCopies(unknownCount, "-");
                 memValues.addAll(unknowns);
             } else {
-                Row row = this.getRowByPrimer(tNamespace, index);
                 memValues.addAll(Arrays.stream(row.getValues())
                     .skip(2)
                     .collect(Collectors.toCollection(ArrayList::new)));
             }
         }
 
-        if (memValues.size() != this.header.getNames().length) {
-            System.err.println("Mismatch " + primer);
-        }
+        //if (memValues.size() != this.header.getNames().length) {
+        //    System.err.println("Mismatch " + primer);
+        //}
 
         memRow.withValues(memValues.stream().toArray(String[]::new));
         return new Pair<>(currentPrimer, memRow);
