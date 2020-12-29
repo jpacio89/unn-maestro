@@ -14,5 +14,4 @@ public abstract class Transformer {
     public abstract void setRuntime(TransformerRuntime runtime);
     public abstract RuntimeContext init(List<DatasetDescriptor> namespaces);
     public abstract Pair<Integer, Row> process(RuntimeContext context, String tNamespace, int primer);
-    public abstract DatasetDescriptor getDescriptor(String tNamespace);
 }

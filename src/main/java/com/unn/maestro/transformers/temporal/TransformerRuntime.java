@@ -92,7 +92,7 @@ public class TransformerRuntime {
                             if (item != null) {
                                 if (!this.rowContainer.containsKey(tNamespace) &&
                                     holder.getMaxProcessedTime() <= 0) {
-                                    NetworkUtils.registerAgent(this.transformer.getDescriptor(tNamespace));
+                                    NetworkUtils.registerAgent(this.getDescriptor(tNamespace));
                                 }
                                 this.rowContainer.put(tNamespace, item.getValue());
                             }
@@ -122,7 +122,7 @@ public class TransformerRuntime {
             return;
         }
 
-        DatasetDescriptor tDescriptor = this.transformer.getDescriptor(tNamespace);
+        DatasetDescriptor tDescriptor = this.getDescriptor(tNamespace);
         Body body = new Body().withRows(rows.stream().toArray(Row[]::new));
         Dataset tDataset = new Dataset()
             .withBody(body)
@@ -133,6 +133,13 @@ public class TransformerRuntime {
     public ArrayList<String> getFeatures(String namespace) {
         return holders.get(namespace).getFeatures().stream()
             .collect(Collectors.toCollection(ArrayList::new));
+    }
+
+    private DatasetDescriptor getDescriptor(String tNamespace) {
+        DatasetDescriptor descriptor = new DatasetDescriptor()
+                .withNamespace(tNamespace);
+        descriptor.withHeader(this.context.getHeaders().get(tNamespace));
+        return descriptor;
     }
 
     private Dataset getNamespaceData(String namespace, int startTime) {
@@ -189,5 +196,9 @@ public class TransformerRuntime {
         int position = this.rowPosition.get(namespace).get(primer);
         return this.holders.get(namespace).getPool()
             .get(position).getValue();
+    }
+
+    public RuntimeContext getContext() {
+        return context;
     }
 }

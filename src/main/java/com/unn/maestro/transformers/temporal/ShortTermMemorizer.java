@@ -22,7 +22,7 @@ public class ShortTermMemorizer extends Transformer {
     @Override
     public RuntimeContext init(List<DatasetDescriptor> namespaces) {
         MultiplesHashMap<String, String> upstreamMapper = new MultiplesHashMap<>();
-        HashMap<String, Header> headers = new HashMap<String, Header>();
+        HashMap<String, Header> headers = new HashMap<>();
         namespaces.stream()
             .filter(namespace -> namespace != null && !namespace.getNamespace().contains("shortmem"))
             .forEach(namespace -> {
@@ -34,14 +34,6 @@ public class ShortTermMemorizer extends Transformer {
         context.setUpstreamMapper(upstreamMapper);
         context.setHeaders(headers);
         return context;
-    }
-
-    @Override
-    public DatasetDescriptor getDescriptor(String tNamespace) {
-        DatasetDescriptor descriptor = new DatasetDescriptor()
-            .withNamespace(tNamespace);
-        descriptor.withHeader(this.headers.get(tNamespace));
-        return descriptor;
     }
 
     @Override
@@ -94,7 +86,7 @@ public class ShortTermMemorizer extends Transformer {
     }
 
     private Row getRowByPrimer(String tNamespace, int primer) {
-        String namespace = upstreamMapper.get(tNamespace).get(0);
+        String namespace = runtime.getContext().getUpstreamMapper().get(tNamespace).get(0);
         return this.runtime.getRowByPrimer(namespace, primer);
     }
 }
