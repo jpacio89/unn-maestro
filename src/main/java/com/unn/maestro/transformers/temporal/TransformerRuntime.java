@@ -6,6 +6,7 @@ import com.unn.common.server.services.DatacenterService;
 import com.unn.common.utils.CSVHelper;
 import com.unn.common.utils.MultiplesHashMap;
 import com.unn.common.utils.Utils;
+import com.unn.maestro.transformers.RuntimeContext;
 import com.unn.maestro.transformers.Transformer;
 import javafx.util.Pair;
 import retrofit2.Call;
@@ -19,6 +20,7 @@ public class TransformerRuntime {
     HashMap<String, MemoryHolder> holders;
     Transformer transformer;
     MultiplesHashMap<String, String> tNamespaces;
+    RuntimeContext context;
     HashMap<String, HashMap<Integer, Integer>> rowPosition;
 
     public TransformerRuntime(Transformer transformer) {
@@ -46,22 +48,24 @@ public class TransformerRuntime {
 
     public void run() {
         while (true) {
-            ArrayList<String> namespaces = getAllNamespaces();
+            ArrayList<DatasetDescriptor> namespaces = getAllNamespaces();
 
             if (this.tNamespaces == null) {
-                this.tNamespaces = this.transformer.init(namespaces);
+                this.context = this.transformer.init(namespaces);
             }
 
             namespaces.forEach(namespace -> {
                 if (!this.holders.containsKey(namespace)) {
-                    this.holders.put(namespace, new MemoryHolder(namespace));
+                    this.holders.put(namespace.getNamespace(),
+                        new MemoryHolder(namespace.getNamespace()));
                 }
 
-                this.rowPosition.put(namespace, new HashMap<>());
+                this.rowPosition.put(namespace.getNamespace(), new HashMap<>());
                 MemoryHolder holder = this.holders.get(namespace);
 
                 while (true) {
-                    Dataset dataset = getNamespaceData(namespace, holder.getMaxProcessedTime());
+                    Dataset dataset = getNamespaceData(namespace.getNamespace(),
+                        holder.getMaxProcessedTime());
 
                     if (dataset == null || dataset.size() == 0) {
                         break;
@@ -82,7 +86,8 @@ public class TransformerRuntime {
                             }
 
                             // TODO: ignore if transformed primer already added to the pool
-                            Pair<Integer, Row> item = this.transformer.process(tNamespace, primer);
+                            Pair<Integer, Row> item = this.transformer.process(
+                                this.context, tNamespace, primer);
 
                             if (item != null) {
                                 if (!this.rowContainer.containsKey(tNamespace) &&
@@ -141,11 +146,11 @@ public class TransformerRuntime {
         return dataset;
     }
 
-    private ArrayList<String> getAllNamespaces() {
+    private ArrayList<DatasetDescriptor> getAllNamespaces() {
         DatacenterService service = Utils.getDatacenter();
-        Call<ArrayList<String>> call = service.getNamespaces();
+        Call<ArrayList<DatasetDescriptor>> call = service.getNamespaces();
         try {
-            ArrayList<String> namespaces = call.execute().body();
+            ArrayList<DatasetDescriptor> namespaces = call.execute().body();
             return namespaces;
         } catch (IOException e) {
             e.printStackTrace();
