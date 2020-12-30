@@ -66,8 +66,6 @@ public class ShortTermMemorizer extends Transformer {
     }
 
     private void initHeader(HashMap<String, Header> headers, DatasetDescriptor descriptor, String transformedNamespace) {
-        // ArrayList<String> features = this.runtime.getFeatures(namespace);
-
         String[] features = descriptor.getHeader().getNames();
         ArrayList<String> memFeatures = new ArrayList<>();
         memFeatures.add("primer");
@@ -77,6 +75,7 @@ public class ShortTermMemorizer extends Transformer {
                 if (feature.equals("id") || feature.equals("primer")) {
                     continue;
                 }
+
                 String name = String.format("mem_%s_%d", feature, i + 1);
                 memFeatures.add(name);
             }
