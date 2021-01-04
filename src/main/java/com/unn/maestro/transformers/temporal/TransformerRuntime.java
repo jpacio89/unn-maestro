@@ -19,7 +19,6 @@ public class TransformerRuntime {
     MultiplesHashMap<String, Row> rowContainer;
     HashMap<String, MemoryHolder> holders;
     Transformer transformer;
-    MultiplesHashMap<String, String> tNamespaces;
     RuntimeContext context;
     HashMap<String, HashMap<Integer, Integer>> rowPosition;
 
@@ -50,7 +49,7 @@ public class TransformerRuntime {
         while (true) {
             ArrayList<DatasetDescriptor> namespaces = getAllNamespaces();
 
-            if (this.tNamespaces == null) {
+            if (this.context == null) {
                 this.context = this.transformer.init(namespaces);
             }
 
@@ -61,7 +60,7 @@ public class TransformerRuntime {
                 }
 
                 this.rowPosition.put(namespace.getNamespace(), new HashMap<>());
-                MemoryHolder holder = this.holders.get(namespace);
+                MemoryHolder holder = this.holders.get(namespace.getNamespace());
 
                 while (true) {
                     Dataset dataset = getNamespaceData(namespace.getNamespace(),
@@ -78,10 +77,10 @@ public class TransformerRuntime {
                         int primer = Integer.parseInt(row.getValues()[1]);
                         maxPrimer = Math.max(primer, maxPrimer);
 
-                        for (String tNamespace : this.tNamespaces.keys()) {
-                            ArrayList<String> upstreamNamespaces = this.tNamespaces.get(tNamespace);
+                        for (String tNamespace : this.context.getUpstreamMapper().keys()) {
+                            ArrayList<String> upstreamNamespaces = this.context.getUpstreamMapper().get(tNamespace);
 
-                            if (!upstreamNamespaces.contains(namespace)) {
+                            if (!upstreamNamespaces.contains(namespace.getNamespace())) {
                                 continue;
                             }
 
@@ -101,7 +100,7 @@ public class TransformerRuntime {
 
                     holder.setMaxProcessedTime(maxPrimer);
 
-                    for (String tNamespace : tNamespaces.keys()) {
+                    for (String tNamespace : this.context.getUpstreamMapper().keys()) {
                         this.processDataset(tNamespace);
                     }
                 }
