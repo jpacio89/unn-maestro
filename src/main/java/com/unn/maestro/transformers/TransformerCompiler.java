@@ -16,38 +16,43 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class TransformerCompiler {
 
-    private String readCode(String sourcePath) throws FileNotFoundException {
+    private static String readCode(String sourcePath) throws FileNotFoundException {
         InputStream stream = new FileInputStream(sourcePath);
         String separator = System.getProperty("line.separator");
         BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
         return reader.lines().collect(Collectors.joining(separator));
     }
 
-    private Path saveSource(String source) throws IOException {
+    private static Path saveSource(String source) throws IOException {
         String tmpProperty = System.getProperty("java.io.tmpdir");
         Path sourcePath = Paths.get(tmpProperty, "Harmless.java");
         Files.write(sourcePath, source.getBytes(UTF_8));
         return sourcePath;
     }
 
-    private Path compileSource(Path javaFile) {
+    private static Path compileSource(Path javaFile) {
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
         compiler.run(null, null, null, javaFile.toFile().getAbsolutePath());
         return javaFile.getParent().resolve("Harmless.class");
     }
 
-    private void runClass(Path javaClass)
+    public static Transformer runClass(Path javaClass)
             throws MalformedURLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
         URL classUrl = javaClass.getParent().toFile().toURI().toURL();
         URLClassLoader classLoader = URLClassLoader.newInstance(new URL[]{classUrl});
         Class<?> clazz = Class.forName("Harmless", true, classLoader);
-        clazz.newInstance();
+        return (Transformer) clazz.newInstance();
     }
 
-    public void process(String sourcePath) throws Exception {
-        String source = readCode(sourcePath);
-        Path javaFile = saveSource(source);
-        Path classFile = compileSource(javaFile);
-        runClass(classFile);
+    public static Transformer process(String sourcePath) {
+        try {
+            String source = readCode(sourcePath);
+            Path javaFile = saveSource(source);
+            Path classFile = compileSource(javaFile);
+            return runClass(classFile);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }

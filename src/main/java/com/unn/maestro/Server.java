@@ -13,6 +13,7 @@ import com.unn.common.server.StatusResponse;
 import com.unn.common.utils.SparkUtils;
 import com.unn.common.mining.MinerNotification;
 import com.unn.maestro.service.Maestro;
+import com.unn.maestro.transformers.TransformerLoader;
 import com.unn.maestro.transformers.temporal.ShortTermMemorizer;
 import com.unn.maestro.transformers.temporal.TransformerRuntime;
 
@@ -32,6 +33,8 @@ public class Server {
 
     private static void initTransformers() {
         TransformerRuntime.build(ShortTermMemorizer.class).start();
+        TransformerLoader.load()
+            .forEach(runtime -> runtime.start());
     }
 
     private static void initMaestro() {
