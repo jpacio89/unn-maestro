@@ -1,9 +1,10 @@
 package com.unn.maestro.transformers.temporal;
 
 import com.unn.common.dataset.*;
+import com.unn.common.transformers.TransformerRuntime;
 import com.unn.common.utils.MultiplesHashMap;
-import com.unn.maestro.transformers.RuntimeContext;
-import com.unn.maestro.transformers.Transformer;
+import com.unn.common.transformers.RuntimeContext;
+import com.unn.common.transformers.Transformer;
 import javafx.util.Pair;
 import java.util.*;
 import java.util.stream.Collectors;

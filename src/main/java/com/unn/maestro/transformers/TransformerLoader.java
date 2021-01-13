@@ -1,12 +1,12 @@
 package com.unn.maestro.transformers;
 
+import com.unn.common.transformers.TransformerDescriptor;
 import com.unn.common.server.services.DatacenterService;
 import com.unn.common.utils.Utils;
-import com.unn.maestro.transformers.temporal.TransformerRuntime;
+import com.unn.common.transformers.TransformerRuntime;
 import retrofit2.Call;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
 

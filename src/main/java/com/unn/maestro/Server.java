@@ -15,7 +15,7 @@ import com.unn.common.mining.MinerNotification;
 import com.unn.maestro.service.Maestro;
 import com.unn.maestro.transformers.TransformerLoader;
 import com.unn.maestro.transformers.temporal.ShortTermMemorizer;
-import com.unn.maestro.transformers.temporal.TransformerRuntime;
+import com.unn.common.transformers.TransformerRuntime;
 
 import static spark.Spark.*;
 
