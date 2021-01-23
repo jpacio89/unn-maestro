@@ -26,7 +26,7 @@ public class TransformerCompiler {
 
     private static Path saveSource(String source) throws IOException {
         String tmpProperty = System.getProperty("java.io.tmpdir");
-        Path sourcePath = Paths.get(tmpProperty, "Harmless.java");
+        Path sourcePath = Paths.get(tmpProperty, "Dummy.java");
         Files.write(sourcePath, source.getBytes(UTF_8));
         return sourcePath;
     }
@@ -34,20 +34,19 @@ public class TransformerCompiler {
     private static Path compileSource(Path javaFile) {
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
         compiler.run(null, null, null, javaFile.toFile().getAbsolutePath());
-        return javaFile.getParent().resolve("Harmless.class");
+        return javaFile.getParent().resolve("Dummy.class");
     }
 
     public static Transformer runClass(Path javaClass)
             throws MalformedURLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
         URL classUrl = javaClass.getParent().toFile().toURI().toURL();
         URLClassLoader classLoader = URLClassLoader.newInstance(new URL[]{classUrl});
-        Class<?> clazz = Class.forName("Harmless", true, classLoader);
+        Class<?> clazz = Class.forName("Dummy", true, classLoader);
         return (Transformer) clazz.newInstance();
     }
 
-    public static Transformer process(String sourcePath) {
+    public static Transformer process(String source) {
         try {
-            String source = readCode(sourcePath);
             Path javaFile = saveSource(source);
             Path classFile = compileSource(javaFile);
             return runClass(classFile);
