@@ -1,4 +1,4 @@
-package com.unn.maestro.tgen;
+package com.unn.maestro.transformers.turing;
 
 import java.util.Scanner;
 

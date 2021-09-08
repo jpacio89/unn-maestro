@@ -1,11 +1,9 @@
-package com.unn.maestro.tgen;
+package com.unn.maestro.transformers.turing;
 
 import com.unn.common.utils.RandomManager;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
-import java.util.Random;
 
 public class ProgramGenerator {
 
