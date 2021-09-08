@@ -10,6 +10,6 @@ public class TestProgramGenerator {
         ProgramGenerator generator = new ProgramGenerator();
         String program = generator.next();
         System.out.println(program);
-        BrainfuckInterpreter.interpret(program);
+        new BrainfuckInterpreter().interpret(program);
     }
 }
