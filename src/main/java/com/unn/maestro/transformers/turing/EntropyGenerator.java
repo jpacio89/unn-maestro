@@ -7,8 +7,6 @@ import com.unn.common.dataset.Row;
 import com.unn.common.utils.RandomManager;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 
 public class EntropyGenerator {
@@ -34,15 +32,17 @@ public class EntropyGenerator {
                 while (!this.enoughEntropy()) {
                     String program = new ProgramGenerator().next();
 
-                    if (this.isProgramValid(program)) {
+                    if (!state.hasProgramBeenProcessed(program)) {
                         Dataset transform = transformDataset(program, dataset);
                         ArrayList<Integer> validFeatureIndexes = this.validFeatureCount(state, transform);
 
                         if (validFeatureIndexes.size() > 0) {
                             state.mergeDataset(program, transform, validFeatureIndexes);
                         } else {
-                            this.rejectTransform(program);
+                            state.rejectProgram(program);
                         }
+                    } else {
+                        state.rejectProgram(program);
                     }
 
                     System.out.println(String.format("Var count: %d", i));
@@ -50,15 +50,6 @@ public class EntropyGenerator {
                 }
             }
         }
-    }
-
-    private boolean isProgramValid(String program) {
-        // TODO: implement
-        return true;
-    }
-
-    private void rejectTransform(String program) {
-        // TODO: implement
     }
 
     public boolean enoughEntropy() {
@@ -109,9 +100,9 @@ public class EntropyGenerator {
                 continue;
             }
             boolean isInter = true;
-            ArrayList<Dataset> datasets = state.getDatasets();
-            for (Dataset dataset : datasets) {
-                isInter = checkInterAcceptance(dataset, transform, i);
+            ArrayList<EntropyState.DatasetHolder> datasets = state.getDatasets();
+            for (EntropyState.DatasetHolder dataset : datasets) {
+                isInter = checkInterAcceptance(dataset.dataset, transform, i);
                 if (!isInter) {
                     break;
                 }
