@@ -29,7 +29,7 @@ public class EntropyGenerator {
             state.mergeDataset(null, dataset, null);
 
             for (int j = MIN_PROGRAM_LENGTH; j < MAX_PROGRAM_LENGTH; ++j) {
-                while (!this.enoughEntropy()) {
+                while (!state.enoughEntropy()) {
                     String program = new ProgramGenerator().next();
 
                     if (!state.hasProgramBeenProcessed(program)) {
@@ -50,11 +50,6 @@ public class EntropyGenerator {
                 }
             }
         }
-    }
-
-    public boolean enoughEntropy() {
-        // TODO: implement
-        return false;
     }
 
     private Dataset getRandomDataset(int varCount) {
