@@ -30,7 +30,7 @@ public class EntropyGenerator {
 
             for (int j = MIN_PROGRAM_LENGTH; j < MAX_PROGRAM_LENGTH; ++j) {
                 while (!state.enoughEntropy()) {
-                    String program = new ProgramGenerator().next();
+                    String program = new ProgramGenerator(j).next();
 
                     if (!state.hasProgramBeenProcessed(program)) {
                         Dataset transform = transformDataset(program, dataset);

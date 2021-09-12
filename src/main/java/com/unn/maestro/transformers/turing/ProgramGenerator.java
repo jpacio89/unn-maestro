@@ -6,14 +6,18 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 public class ProgramGenerator {
+    final int MIN_LOOP_SIZE = 4;
+    int programLength;
 
     public ProgramGenerator() {
+        this.programLength = 10;
+    }
 
+    public ProgramGenerator(int _programLength) {
+        this.programLength = _programLength;
     }
 
     public String next() {
-        int programLength = 10;
-        int minLoopSize = 4;
         ArrayList<Character> operators = new ArrayList<>(
             Arrays.asList('>', '<', '+', '-', '[', ']')
         );
@@ -25,7 +29,7 @@ public class ProgramGenerator {
         for (int i = 0; i < programLength; ++i) {
             char el = RandomManager.getOne(operators);
             if (el == '[') {
-                if (i > programLength - minLoopSize) {
+                if (i > programLength - MIN_LOOP_SIZE) {
                     i--;
                     continue;
                 }
@@ -33,7 +37,7 @@ public class ProgramGenerator {
                 depth++;
                 lastLoopStart = i;
             } else if (el == ']') {
-                if (i - lastLoopStart > minLoopSize && depth > 0) {
+                if (i - lastLoopStart > MIN_LOOP_SIZE && depth > 0) {
                     builder.append(el);
                     depth--;
                 } else {

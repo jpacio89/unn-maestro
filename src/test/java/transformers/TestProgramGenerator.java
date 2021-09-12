@@ -1,6 +1,7 @@
 package transformers;
 
 import com.unn.maestro.transformers.turing.BrainfuckInterpreter;
+import com.unn.maestro.transformers.turing.EntropyGenerator;
 import com.unn.maestro.transformers.turing.ProgramGenerator;
 import org.junit.Test;
 
@@ -11,5 +12,11 @@ public class TestProgramGenerator {
         String program = generator.next();
         System.out.println(program);
         new BrainfuckInterpreter().interpret(program);
+    }
+
+    @Test
+    public void testEntropyGenerator() {
+        EntropyGenerator generator = new EntropyGenerator();
+        generator.run();
     }
 }

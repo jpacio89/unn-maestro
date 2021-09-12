@@ -5,6 +5,8 @@ import com.unn.common.dataset.Row;
 import java.util.Scanner;
 
 public class BrainfuckInterpreter {
+    private final int MAX_CYCLES = 1000;
+
     private static Scanner ob = new Scanner(System.in);
     private int ptr; // Data pointer
 
@@ -25,13 +27,20 @@ public class BrainfuckInterpreter {
         //memory[0] = 10;
         //memory[1] = 31;
         int c = 0;
+        int cycles = 0;
 
         // Parsing through each character of the code
-        for (int i = 0; i < program.length(); i++) {
+        for (int i = 0; i < program.length(); i++, cycles++) {
             // BrainFuck is a tiny language with only
             // eight instructions. In this loop we check
             // and execute all those eight instructions
 
+            // Customizations to the language spec:
+            // - adding max cycle count to avoid endless loop (halting problem)
+            // - making arithmetic modular and divisor configurable
+            if (cycles > MAX_CYCLES) {
+                break;
+            }
 
             // > moves the pointer to the right
             if (program.charAt(i) == '>') {
