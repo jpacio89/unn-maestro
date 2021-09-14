@@ -1,12 +1,12 @@
 package com.unn.maestro.transformers.turing;
 
-import com.unn.common.dataset.Body;
-import com.unn.common.dataset.Dataset;
-import com.unn.common.dataset.Header;
-import com.unn.common.dataset.Row;
+import com.unn.common.dataset.*;
 import com.unn.common.utils.RandomManager;
 
+import javax.management.Descriptor;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 
 public class EntropyGenerator {
@@ -16,7 +16,7 @@ public class EntropyGenerator {
     final int MAX_PROGRAM_LENGTH = 10;
     final int DATA_ROW_COUNT = 1000;
     final int MAX_TVAR_COUNT = 10;
-    final int VAR_MAX_VALUE = 256;
+    final int VAR_MAX_VALUE = 127;
 
     public EntropyGenerator() {
 
@@ -54,14 +54,20 @@ public class EntropyGenerator {
 
     private Dataset getRandomDataset(int varCount) {
         Row[] rows = new Row[DATA_ROW_COUNT];
-        for (int i = 0; i < varCount; ++i) {
+        for (int i = 0; i < rows.length; ++i) {
             String[] values = new String[varCount];
             for (int j = 0; j < varCount; j++) {
                 values[j] = Integer.toString(RandomManager.rand(0, VAR_MAX_VALUE));
             }
             rows[i] = new Row().withValues(values);
         }
+        ArrayList<String> names = new ArrayList<>();
+        for (int counter = 0; counter < varCount; ++counter) {
+            names.add(String.format("arg-%d", counter));
+        }
         return new Dataset()
+            .withDescriptor(new DatasetDescriptor()
+                    .withHeader(new Header().withNames(names.stream().toArray(String[]::new))))
             .withBody(new Body().withRows(rows));
     }
 
@@ -69,16 +75,28 @@ public class EntropyGenerator {
         Row[] rows = dataset.getBody().getRows();
         Row[] tRows = new Row[rows.length];
 
+        System.out.println(program);
+
         for (int i = 0; i < rows.length; ++i) {
             Row r = rows[i];
             tRows[i] = new BrainfuckInterpreter()
                 .interpret(program, r.getValues())
                 .toRow(MAX_TVAR_COUNT);
 
+            //System.out.print(i);
+            //System.out.print(Arrays.toString(rows[i].getValues()));
+            //System.out.println(Arrays.toString(tRows[i].getValues()));
             // TODO: improvement -> if already transformed rows fail to reach acceptance criteria, break loop
         }
 
+        ArrayList<String> names = new ArrayList<>();
+        for (int counter = 0; counter < MAX_TVAR_COUNT; ++counter) {
+            names.add(String.format("booster-%d", counter));
+        }
+
         return new Dataset()
+            .withDescriptor(new DatasetDescriptor()
+                .withHeader(new Header().withNames(names.stream().toArray(String[]::new))))
             .withBody(new Body().withRows(tRows));
     }
 

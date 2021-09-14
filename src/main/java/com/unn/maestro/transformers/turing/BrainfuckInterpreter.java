@@ -119,27 +119,32 @@ public class BrainfuckInterpreter {
             }
         }
 
-        System.out.print("{ ");
+        /*System.out.print("{ ");
 
         for (int i = 0; i <= ptr; ++i) {
             System.out.print(memory[i]);
             System.out.print(" ");
         }
 
-        System.out.println("}");
+        System.out.println("}");*/
         return this;
     }
 
     public BrainfuckInterpreter interpret(String program, String[] args) {
         for (int i = 0; i < args.length; ++i) {
-            this.memory[i] = Byte.parseByte(args[i]);
+            this.memory[i] = Byte.parseByte(args[i], 10);
         }
         this.interpret(program);
         return this;
     }
 
-    public Row toRow(int max_tvar_count) {
-        // TODO: implement
-        return null;
+    public Row toRow(int maxTvarCount) {
+        Row r = new Row();
+        String[] values = new String[maxTvarCount];
+        for (int i = 0; i < maxTvarCount; ++i) {
+            values[i] = Integer.toString(this.memory[i]);
+        }
+        r.withValues(values);
+        return r;
     }
 }
