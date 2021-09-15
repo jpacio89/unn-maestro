@@ -19,7 +19,7 @@ public class BrainfuckInterpreter {
 
     // Array of byte type simulating memory of max
     // 65535 bits from 0 to 65534.
-    private byte memory[] = new byte[length];
+    private int memory[] = new int[length];
 
     // Interpreter function which accepts the code
     // a string parameter
@@ -63,13 +63,21 @@ public class BrainfuckInterpreter {
 
             // + increments the value of the memory
             // cell under the pointer
-            else if (program.charAt(i) == '+')
-                memory[ptr] ++;
+            else if (program.charAt(i) == '+') {
+                memory[ptr]++;
+                if (memory[ptr] > 127) {
+                    memory[ptr] = 0;
+                }
+            }
 
             // - decrements the value of the memory cell
             // under the pointer
-            else if (program.charAt(i) == '-')
-                memory[ptr] --;
+            else if (program.charAt(i) == '-') {
+                memory[ptr]--;
+                if (memory[ptr] < 0) {
+                    memory[ptr] = 127;
+                }
+            }
 
             // . outputs the character signified by the
             // cell at the pointer

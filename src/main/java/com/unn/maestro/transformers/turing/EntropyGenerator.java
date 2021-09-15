@@ -10,8 +10,8 @@ import java.util.Arrays;
 import java.util.HashSet;
 
 public class EntropyGenerator {
-    final int MIN_VAR_COUNT = 5;
-    final int MAX_VAR_COUNT = 5;
+    final int MIN_VAR_COUNT = 10;
+    final int MAX_VAR_COUNT = 10;
     final int MIN_PROGRAM_LENGTH = 5;
     final int MAX_PROGRAM_LENGTH = 20;
     final int DATA_ROW_COUNT = 1000;
