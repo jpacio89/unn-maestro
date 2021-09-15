@@ -3,10 +3,7 @@ package com.unn.maestro.transformers.turing;
 import com.unn.common.dataset.*;
 import com.unn.common.utils.RandomManager;
 
-import javax.management.Descriptor;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 
 public class EntropyGenerator {
@@ -97,7 +94,9 @@ public class EntropyGenerator {
 
         return new Dataset()
             .withDescriptor(new DatasetDescriptor()
-                .withHeader(new Header().withNames(names.stream().toArray(String[]::new))))
+                .withHeader(new Header()
+                    .withNames(names.stream()
+                        .toArray(String[]::new))))
             .withBody(new Body().withRows(tRows));
     }
 
