@@ -10,10 +10,10 @@ import java.util.Arrays;
 import java.util.HashSet;
 
 public class EntropyGenerator {
-    final int MIN_VAR_COUNT = 1;
-    final int MAX_VAR_COUNT = 10;
+    final int MIN_VAR_COUNT = 5;
+    final int MAX_VAR_COUNT = 5;
     final int MIN_PROGRAM_LENGTH = 5;
-    final int MAX_PROGRAM_LENGTH = 10;
+    final int MAX_PROGRAM_LENGTH = 20;
     final int DATA_ROW_COUNT = 1000;
     final int MAX_TVAR_COUNT = 10;
     final int VAR_MAX_VALUE = 127;
@@ -23,7 +23,7 @@ public class EntropyGenerator {
     }
 
     public void run() {
-        for (int i = MIN_VAR_COUNT; i < MAX_VAR_COUNT; ++i) {
+        for (int i = MIN_VAR_COUNT; i <= MAX_VAR_COUNT; ++i) {
             EntropyState state = new EntropyState();
             Dataset dataset = getRandomDataset(i);
             state.mergeDataset(null, dataset, null);
@@ -48,6 +48,7 @@ public class EntropyGenerator {
                     System.out.println(String.format("Var count: %d", i));
                     System.out.println(String.format("Program count: %d", state.getProgramCount()));
                 }
+                state.resetEntropy();
             }
         }
     }

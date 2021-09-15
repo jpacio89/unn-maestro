@@ -5,7 +5,8 @@ import com.unn.common.dataset.Dataset;
 import java.util.*;
 
 public class EntropyState {
-    private final int OUTCOMES_SIZE = 10;
+    private final int OUTCOMES_SIZE = 1000;
+
     private enum Outcome { ACCEPT, REJECT };
     HashSet<String> programs;
     HashMap<String, DatasetHolder> selectedPrograms;
@@ -40,12 +41,15 @@ public class EntropyState {
     }
 
     public boolean enoughEntropy() {
-        final int STOP_RATIO = 20;
-        int counter = 0;
+        int counter = this.outcomes.size();
         long accepts = this.outcomes.stream()
             .filter(o -> o == Outcome.ACCEPT)
             .count();
-        return counter > 0 && (accepts == 0 || counter / accepts > STOP_RATIO);
+        return counter >= OUTCOMES_SIZE && accepts == 0;
+    }
+
+    public void resetEntropy() {
+        this.outcomes.clear();
     }
 
     protected void addOutcome(Outcome o) {
