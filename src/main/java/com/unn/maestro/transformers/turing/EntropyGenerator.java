@@ -31,7 +31,7 @@ public class EntropyGenerator {
 
                     if (!state.hasProgramBeenProcessed(program)) {
                         Dataset transform = transformDataset(program, dataset);
-                        ArrayList<Integer> validFeatureIndexes = this.validFeatureCount(state, transform);
+                        ArrayList<Integer> validFeatureIndexes = this.getValidFeatures(state, transform);
 
                         if (validFeatureIndexes.size() > 0) {
                             state.mergeDataset(program, transform, validFeatureIndexes);
@@ -100,7 +100,7 @@ public class EntropyGenerator {
             .withBody(new Body().withRows(tRows));
     }
 
-    private ArrayList<Integer> validFeatureCount(EntropyState state, Dataset transform) {
+    private ArrayList<Integer> getValidFeatures(EntropyState state, Dataset transform) {
         ArrayList<Integer> validTColumns = new ArrayList<>();
         HashSet<Integer> ignoreTColumns = new HashSet<>();
         int tColumnCount = transform.getDescriptor().getHeader().getNames().length;
@@ -154,7 +154,7 @@ public class EntropyGenerator {
                 Row row = rows[j];
                 Row tRow = tRows[j];
                 int val = Integer.parseInt(row.getValues()[i]);
-                int tVal = Integer.parseInt(tRow.getValues()[i]);
+                int tVal = Integer.parseInt(tRow.getValues()[columnIndex]);
                 diffSum += Math.abs(val - tVal);
             }
             diffSum = diffSum / rows.length;
