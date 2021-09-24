@@ -131,7 +131,6 @@ public class EntropyGenerator {
     }
 
     private boolean checkInterAcceptance(Dataset dataset, Dataset transform, int columnIndex) {
-        final int MIN_DIFFERENCE_ABSOLUTE = 1;
         Header h = dataset.getDescriptor().getHeader();
         int columnCount = h.getNames().length;
         Row[] rows = dataset.getBody().getRows();
@@ -151,21 +150,19 @@ public class EntropyGenerator {
                 diffSum += Math.abs(val - tVal);
             }
             diffSum = diffSum / rows.length;
-            accept = diffSum > MIN_DIFFERENCE_ABSOLUTE;
+            accept = diffSum > TuringConfig.MIN_DIFFERENCE_ABSOLUTE;
         }
 
         return accept;
     }
 
     private boolean checkIntraAcceptance(Dataset transform, int columnIndex) {
-        final int MIN_CARDINALITY_ABSOLUTE = 10;
-        final int MIN_CARDINALITY_RELATIVE = 10;
         HashSet<String> cache = new HashSet<>();
         Row[] rows = transform.getBody().getRows();
         for (Row row : rows) {
             cache.add(row.getValues()[columnIndex]);
         }
-        return cache.size() >= MIN_CARDINALITY_ABSOLUTE &&
-            TuringConfig.VAR_MAX_VALUE / cache.size() <= MIN_CARDINALITY_RELATIVE;
+        return cache.size() >= TuringConfig.MIN_CARDINALITY_ABSOLUTE &&
+            TuringConfig.VAR_MAX_VALUE / cache.size() <= TuringConfig.MIN_CARDINALITY_RELATIVE;
     }
 }

@@ -63,7 +63,7 @@ public class BrainfuckInterpreter {
             // cell under the pointer
             else if (program.charAt(i) == '+') {
                 memory[ptr]++;
-                if (memory[ptr] > 127) {
+                if (memory[ptr] > TuringConfig.VAR_MAX_VALUE) {
                     memory[ptr] = 0;
                 }
             }
@@ -73,7 +73,7 @@ public class BrainfuckInterpreter {
             else if (program.charAt(i) == '-') {
                 memory[ptr]--;
                 if (memory[ptr] < 0) {
-                    memory[ptr] = 127;
+                    memory[ptr] = TuringConfig.VAR_MAX_VALUE;
                 }
             }
 
