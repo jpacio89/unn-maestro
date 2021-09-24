@@ -36,6 +36,7 @@ public class EntropyGenerator {
                     }
 
                     System.out.println(String.format("Var count: %d", i));
+                    System.out.println(String.format("Program length: %d", j));
                     System.out.println(String.format("Program count: %d", state.getProgramCount()));
                 }
                 state.resetEntropy();
@@ -141,16 +142,16 @@ public class EntropyGenerator {
             if (!accept) {
                 break;
             }
-            long diffSum = 0;
+            double diffSum = 0.0;
             for (int j = 0; j < rows.length; ++j) {
                 Row row = rows[j];
                 Row tRow = tRows[j];
                 int val = Integer.parseInt(row.getValues()[i]);
                 int tVal = Integer.parseInt(tRow.getValues()[columnIndex]);
-                diffSum += Math.abs(val - tVal);
+                diffSum += Math.abs(val - tVal) / TuringConfig.VAR_MAX_VALUE;
             }
-            diffSum = diffSum / rows.length;
-            accept = diffSum > TuringConfig.MIN_DIFFERENCE_ABSOLUTE;
+            diffSum = diffSum * 100 / rows.length;
+            accept = diffSum >= TuringConfig.MIN_DIFFERENCE_ABSOLUTE;
         }
 
         return accept;
@@ -162,7 +163,7 @@ public class EntropyGenerator {
         for (Row row : rows) {
             cache.add(row.getValues()[columnIndex]);
         }
-        return cache.size() >= TuringConfig.MIN_CARDINALITY_ABSOLUTE &&
-            TuringConfig.VAR_MAX_VALUE / cache.size() <= TuringConfig.MIN_CARDINALITY_RELATIVE;
+        double ratio = cache.size() * 100 / (TuringConfig.VAR_MAX_VALUE + 1.0);
+        return ratio >= TuringConfig.INTRA_ACCEPTANCE_RATIO;
     }
 }
