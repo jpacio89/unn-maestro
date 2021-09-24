@@ -7,25 +7,18 @@ import java.util.ArrayList;
 import java.util.HashSet;
 
 public class EntropyGenerator {
-    final int MIN_VAR_COUNT = 10;
-    final int MAX_VAR_COUNT = 10;
-    final int MIN_PROGRAM_LENGTH = 5;
-    final int MAX_PROGRAM_LENGTH = 20;
-    final int DATA_ROW_COUNT = 1000;
-    final int MAX_TVAR_COUNT = 10;
-    final int VAR_MAX_VALUE = 127;
 
     public EntropyGenerator() {
 
     }
 
     public void run() {
-        for (int i = MIN_VAR_COUNT; i <= MAX_VAR_COUNT; ++i) {
+        for (int i = TuringConfig.MIN_VAR_COUNT; i <= TuringConfig.MAX_VAR_COUNT; ++i) {
             EntropyState state = new EntropyState();
             Dataset dataset = getRandomDataset(i);
             state.mergeDataset(null, dataset, null);
 
-            for (int j = MIN_PROGRAM_LENGTH; j < MAX_PROGRAM_LENGTH; ++j) {
+            for (int j = TuringConfig.MIN_PROGRAM_LENGTH; j < TuringConfig.MAX_PROGRAM_LENGTH; ++j) {
                 while (!state.enoughEntropy()) {
                     String program = new ProgramGenerator(j).next();
 
@@ -51,11 +44,11 @@ public class EntropyGenerator {
     }
 
     private Dataset getRandomDataset(int varCount) {
-        Row[] rows = new Row[DATA_ROW_COUNT];
+        Row[] rows = new Row[TuringConfig.DATA_ROW_COUNT];
         for (int i = 0; i < rows.length; ++i) {
             String[] values = new String[varCount];
             for (int j = 0; j < varCount; j++) {
-                values[j] = Integer.toString(RandomManager.rand(0, VAR_MAX_VALUE));
+                values[j] = Integer.toString(RandomManager.rand(0, TuringConfig.VAR_MAX_VALUE));
             }
             rows[i] = new Row().withValues(values);
         }
@@ -79,7 +72,7 @@ public class EntropyGenerator {
             Row r = rows[i];
             tRows[i] = new BrainfuckInterpreter()
                 .interpret(program, r.getValues())
-                .toRow(MAX_TVAR_COUNT);
+                .toRow(TuringConfig.MAX_TVAR_COUNT);
 
             //System.out.print(i);
             //System.out.print(Arrays.toString(rows[i].getValues()));
@@ -88,7 +81,7 @@ public class EntropyGenerator {
         }
 
         ArrayList<String> names = new ArrayList<>();
-        for (int counter = 0; counter < MAX_TVAR_COUNT; ++counter) {
+        for (int counter = 0; counter < TuringConfig.MAX_TVAR_COUNT; ++counter) {
             names.add(String.format("booster-%d", counter));
         }
 
@@ -173,6 +166,6 @@ public class EntropyGenerator {
             cache.add(row.getValues()[columnIndex]);
         }
         return cache.size() >= MIN_CARDINALITY_ABSOLUTE &&
-            VAR_MAX_VALUE / cache.size() <= MIN_CARDINALITY_RELATIVE;
+            TuringConfig.VAR_MAX_VALUE / cache.size() <= MIN_CARDINALITY_RELATIVE;
     }
 }

@@ -5,8 +5,6 @@ import com.unn.common.dataset.Row;
 import java.util.Scanner;
 
 public class BrainfuckInterpreter {
-    private final int MAX_CYCLES = 1000;
-
     private static Scanner ob = new Scanner(System.in);
     private int ptr; // Data pointer
 
@@ -38,7 +36,7 @@ public class BrainfuckInterpreter {
             // Customizations to the language spec:
             // - adding max cycle count to avoid endless loop (halting problem)
             // - making arithmetic modular and divisor configurable
-            if (cycles > MAX_CYCLES) {
+            if (cycles > TuringConfig.MAX_CYCLES) {
                 break;
             }
 
