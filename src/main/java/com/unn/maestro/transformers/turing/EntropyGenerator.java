@@ -13,10 +13,12 @@ public class EntropyGenerator {
     }
 
     public void run() {
+        Archive archive = new Archive();
+        archive.init();
         for (int i = TuringConfig.get().MIN_VAR_COUNT; i <= TuringConfig.get().MAX_VAR_COUNT; ++i) {
-            EntropyState state = new EntropyState();
+            EntropyState state = new EntropyState(archive);
             Dataset dataset = getRandomDataset(i);
-            state.mergeDataset(null, dataset, null);
+            state.mergeDataset(null, dataset, null, null);
 
             for (int j = TuringConfig.get().MIN_PROGRAM_LENGTH; j < TuringConfig.get().MAX_PROGRAM_LENGTH; ++j) {
                 while (!state.enoughEntropy()) {
@@ -27,7 +29,7 @@ public class EntropyGenerator {
                         ArrayList<Integer> validFeatureIndexes = this.getValidFeatures(state, transform);
 
                         if (validFeatureIndexes.size() > 0) {
-                            state.mergeDataset(program, transform, validFeatureIndexes);
+                            state.mergeDataset(program, dataset, transform, validFeatureIndexes);
                         } else {
                             state.rejectProgram(program);
                         }
