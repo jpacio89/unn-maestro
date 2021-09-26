@@ -36,7 +36,7 @@ public class BrainfuckInterpreter {
             // Customizations to the language spec:
             // - adding max cycle count to avoid endless loop (halting problem)
             // - making arithmetic modular and divisor configurable
-            if (cycles > TuringConfig.MAX_CYCLES) {
+            if (cycles > TuringConfig.get().MAX_CYCLES) {
                 break;
             }
 
@@ -63,7 +63,7 @@ public class BrainfuckInterpreter {
             // cell under the pointer
             else if (program.charAt(i) == '+') {
                 memory[ptr]++;
-                if (memory[ptr] > TuringConfig.VAR_MAX_VALUE) {
+                if (memory[ptr] > TuringConfig.get().VAR_MAX_VALUE) {
                     memory[ptr] = 0;
                 }
             }
@@ -73,7 +73,7 @@ public class BrainfuckInterpreter {
             else if (program.charAt(i) == '-') {
                 memory[ptr]--;
                 if (memory[ptr] < 0) {
-                    memory[ptr] = TuringConfig.VAR_MAX_VALUE;
+                    memory[ptr] = TuringConfig.get().VAR_MAX_VALUE;
                 }
             }
 

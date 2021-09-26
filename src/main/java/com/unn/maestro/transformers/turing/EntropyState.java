@@ -43,7 +43,7 @@ public class EntropyState {
         long accepts = this.outcomes.stream()
             .filter(o -> o == Outcome.ACCEPT)
             .count();
-        return counter >= TuringConfig.OUTCOMES_SIZE && accepts == 0;
+        return counter >= TuringConfig.get().OUTCOMES_SIZE && accepts == 0;
     }
 
     public void resetEntropy() {
@@ -52,7 +52,7 @@ public class EntropyState {
 
     protected void addOutcome(Outcome o) {
         this.outcomes.addLast(o);
-        while (this.outcomes.size() > TuringConfig.OUTCOMES_SIZE) {
+        while (this.outcomes.size() > TuringConfig.get().OUTCOMES_SIZE) {
             this.outcomes.removeFirst();
         }
     }

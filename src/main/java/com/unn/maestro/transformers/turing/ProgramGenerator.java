@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 public class ProgramGenerator {
+    TuringConfig config;
     int programLength;
 
     public ProgramGenerator() {
@@ -28,7 +29,7 @@ public class ProgramGenerator {
         for (int i = 0; i < programLength; ++i) {
             char el = RandomManager.getOne(operators);
             if (el == '[') {
-                if (i > programLength - TuringConfig.MIN_LOOP_SIZE) {
+                if (i > programLength - TuringConfig.get().MIN_LOOP_SIZE) {
                     i--;
                     continue;
                 }
@@ -36,7 +37,7 @@ public class ProgramGenerator {
                 depth++;
                 lastLoopStart = i;
             } else if (el == ']') {
-                if (i - lastLoopStart > TuringConfig.MIN_LOOP_SIZE && depth > 0) {
+                if (i - lastLoopStart > TuringConfig.get().MIN_LOOP_SIZE && depth > 0) {
                     builder.append(el);
                     depth--;
                 } else {
