@@ -24,7 +24,8 @@ public class EntropyGenerator {
                 while (!state.enoughEntropy()) {
                     String program = new ProgramGenerator(j).next();
 
-                    if (!state.hasProgramBeenProcessed(program)) {
+                    if (!state.hasProgramBeenProcessed(program) &&
+                            !archive.hasProgram(program)) {
                         Dataset transform = transformDataset(program, dataset);
                         ArrayList<Integer> validFeatureIndexes = this.getValidFeatures(state, transform);
 
