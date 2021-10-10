@@ -1,6 +1,6 @@
 package transformers;
 
-import com.unn.maestro.transformers.turing.BrainfuckInterpreter;
+import com.unn.common.boosting.BrainfuckInterpreter;
 import com.unn.maestro.transformers.turing.EntropyGenerator;
 import com.unn.maestro.transformers.turing.ProgramGenerator;
 import org.junit.Test;

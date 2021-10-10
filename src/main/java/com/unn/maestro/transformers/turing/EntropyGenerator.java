@@ -1,5 +1,7 @@
 package com.unn.maestro.transformers.turing;
 
+import com.unn.common.boosting.BrainfuckInterpreter;
+import com.unn.common.boosting.TuringConfig;
 import com.unn.common.dataset.*;
 import com.unn.common.utils.RandomManager;
 

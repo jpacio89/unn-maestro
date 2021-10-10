@@ -1,5 +1,6 @@
 package com.unn.maestro.transformers.turing;
 
+import com.unn.common.boosting.TuringConfig;
 import com.unn.common.utils.RandomManager;
 
 import java.util.ArrayList;

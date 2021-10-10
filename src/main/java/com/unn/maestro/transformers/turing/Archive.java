@@ -1,14 +1,13 @@
 package com.unn.maestro.transformers.turing;
 
+import com.unn.common.boosting.TuringConfig;
 import com.unn.common.dataset.Dataset;
 import com.unn.common.utils.Serializer;
 import com.unn.common.utils.Utils;
 
 import java.io.File;
-import java.io.FilenameFilter;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -16,7 +15,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.UUID;
 
-public class Archive {
+public class Archive implements Serializable {
     UUID uuid;
     String folderPath;
 
@@ -37,13 +36,13 @@ public class Archive {
         if (!theDir.exists()){
             theDir.mkdirs();
         }
-        String iniPath = String.format("%s/%s", folderPath, "archive");
+        String iniPath = String.format("%s/%s", folderPath, "_archive");
         File ini = new File(iniPath);
         if (ini.exists()) {
             this.preload();
             return;
         }
-        Serializer.write(TuringConfig.get(), iniPath, "_ini");
+        Serializer.write(TuringConfig.get(), iniPath, "conf");
     }
 
     public void save(String program, Dataset dataset,
